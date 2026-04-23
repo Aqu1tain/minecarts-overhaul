@@ -170,15 +170,20 @@ public abstract class MinecartFurnaceMixin {
         probe.addTag("train");
 
         AbstractMinecart anchor = self;
-        for (int i = 0; i < train.size(); i++) {
-            AbstractMinecart trailer = train.get(i);
+        boolean cascade = self.isOnRails();
+        for (AbstractMinecart trailer : train) {
             trailer.removeTag("trainMove");
+            if (!cascade) continue;
+            if (!isOnRail(trailer)) {
+                cascade = false;
+                continue;
+            }
             placeProbeBehind(probe, anchor);
             probe.getBehavior().moveAlongTrack(level);
             trailer.getBehavior().moveAlongTrack(level);
             if (!snapTrailerToProbe(trailer, probe, locomotiveSpeed)) {
-                breakTrainAt(i);
-                break;
+                cascade = false;
+                continue;
             }
             trailer.addTag("trainMove");
             anchor = trailer;
