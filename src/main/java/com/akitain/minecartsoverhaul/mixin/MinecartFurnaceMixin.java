@@ -8,10 +8,13 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.vehicle.ContainerEntity;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.minecart.MinecartChest;
 import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
+import net.minecraft.world.entity.vehicle.minecart.MinecartHopper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -39,6 +42,7 @@ public abstract class MinecartFurnaceMixin {
     @Unique private static final int MAX_TRAILERS = 7;
     @Unique private static final float TRAIN_DISTANCE = 1.5F;
     @Unique private static final double MAX_SNAP_DISTANCE_SQR = 4.0;
+    @Unique private static final int FUEL_TOPUP_THRESHOLD = 100;
 
     @Unique private final List<AbstractMinecart> train = new ArrayList<>();
     @Unique private final List<UUID> pendingTrainUuids = new ArrayList<>();
@@ -94,6 +98,31 @@ public abstract class MinecartFurnaceMixin {
         disconnectBroken();
         moveTrailers(serverLevel);
         attachNearby(serverLevel);
+        tryPullFuelFromTrailer(self);
+    }
+
+    @Unique
+    private void tryPullFuelFromTrailer(MinecartFurnace self) {
+        if (fuel >= FUEL_TOPUP_THRESHOLD) return;
+        if (train.isEmpty()) return;
+        AbstractMinecart first = train.get(0);
+        if (!(first instanceof ContainerEntity container)) return;
+        if (!(first instanceof MinecartChest || first instanceof MinecartHopper)) return;
+
+        var stacks = container.getItemStacks();
+        for (int i = 0; i < stacks.size(); i++) {
+            ItemStack stack = stacks.get(i);
+            if (stack.isEmpty()) continue;
+            int burnTicks = self.level().fuelValues().burnDuration(stack);
+            if (burnTicks <= 0) continue;
+            if (stack.is(Items.LAVA_BUCKET)) {
+                stacks.set(i, new ItemStack(Items.BUCKET));
+            } else {
+                stack.shrink(1);
+            }
+            fuel += burnTicks;
+            return;
+        }
     }
 
     @Unique
