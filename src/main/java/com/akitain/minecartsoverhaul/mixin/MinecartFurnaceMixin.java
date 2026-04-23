@@ -225,13 +225,15 @@ public abstract class MinecartFurnaceMixin {
         if (train.isEmpty()) return;
 
         MinecartFurnace self = self();
-        double locomotiveSpeed = self.getDeltaMovement().horizontalDistance();
-        AbstractMinecart probe = new MinecartChest(EntityType.CHEST_MINECART, level);
-        probe.noPhysics = true;
-        probe.addTag("train");
+        if (!self.isOnRails()) {
+            for (AbstractMinecart trailer : train) trailer.removeTag("trainMove");
+            return;
+        }
 
-        AbstractMinecart anchor = self;
-        boolean cascade = self.isOnRails();
+        double locomotiveSpeed = self.getDeltaMovement().horizontalDistance();
+        AbstractMinecart probe = createProbeAtLocomotive(level, self);
+
+        boolean cascade = true;
         for (AbstractMinecart trailer : train) {
             trailer.removeTag("trainMove");
             if (!cascade) continue;
@@ -239,17 +241,35 @@ public abstract class MinecartFurnaceMixin {
                 cascade = false;
                 continue;
             }
-            placeProbeBehind(probe, anchor);
+            trailer.getBehavior().moveAlongTrack(level);
             probe.getBehavior().moveAlongTrack(level);
-            if (!snapTrailerToProbe(trailer, probe, locomotiveSpeed)) {
+            if (trailer.position().distanceToSqr(probe.position()) > MAX_SNAP_DISTANCE_SQR) {
                 cascade = false;
                 continue;
             }
+            snapTrailerToProbe(trailer, probe, locomotiveSpeed);
             trailer.addTag("trainMove");
-            anchor = trailer;
         }
 
         probe.remove(Entity.RemovalReason.DISCARDED);
+    }
+
+    @Unique
+    private AbstractMinecart createProbeAtLocomotive(ServerLevel level, MinecartFurnace self) {
+        AbstractMinecart probe = new MinecartChest(EntityType.CHEST_MINECART, level);
+        probe.noPhysics = true;
+        probe.addTag("train");
+        probe.setPos(self.position());
+        probe.setYRot(self.getYRot());
+        probe.setXRot(self.getXRot());
+        probe.setOnRails(true);
+        float yawRad = (float) (self.getYRot() * Math.PI / 180.0);
+        probe.setDeltaMovement(
+                -TRAIN_DISTANCE * Mth.cos(yawRad),
+                0.0,
+                TRAIN_DISTANCE * Mth.sin(yawRad)
+        );
+        return probe;
     }
 
     @Unique
@@ -267,9 +287,7 @@ public abstract class MinecartFurnaceMixin {
     }
 
     @Unique
-    private boolean snapTrailerToProbe(AbstractMinecart trailer, AbstractMinecart probe, double locomotiveSpeed) {
-        if (trailer.position().distanceToSqr(probe.position()) > MAX_SNAP_DISTANCE_SQR) return false;
-
+    private void snapTrailerToProbe(AbstractMinecart trailer, AbstractMinecart probe, double locomotiveSpeed) {
         Vec3 probeVelocity = probe.getDeltaMovement();
         Vec3 horizontal = new Vec3(probeVelocity.x, 0.0, probeVelocity.z);
         trailer.setPos(probe.position());
@@ -278,12 +296,10 @@ public abstract class MinecartFurnaceMixin {
 
         if (horizontal.lengthSqr() < 1.0E-6) {
             trailer.setDeltaMovement(0.0, trailer.getDeltaMovement().y, 0.0);
-            return true;
+            return;
         }
-
         Vec3 forward = horizontal.normalize().scale(-locomotiveSpeed);
         trailer.setDeltaMovement(forward.x, trailer.getDeltaMovement().y, forward.z);
-        return true;
     }
 
     @Unique
