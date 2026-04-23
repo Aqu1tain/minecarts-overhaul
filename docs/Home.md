@@ -11,3 +11,4 @@ New to the mod? Start with the [[Getting Started]] guide.
 ## Credits
 
 - [Akitain](https://modrinth.com/user/akitain): design and development
+- [green_jab (Joshua Baikie)](https://github.com/GreenJAB): original minecart system design in [Fixed Minecraft](https://github.com/GreenJAB/fixed-minecraft), used with permission

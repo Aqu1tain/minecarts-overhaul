@@ -9,6 +9,7 @@ See the [Wiki](https://github.com/Aqu1tain/minecarts-overhaul/wiki) for detailed
 ## Credits
 
 - **Aqu1tain** — design and development
+- **green_jab (Joshua Baikie)** — original minecart system design in [Fixed Minecraft](https://github.com/GreenJAB/fixed-minecraft), used with permission
 
 ## Requirements
 
