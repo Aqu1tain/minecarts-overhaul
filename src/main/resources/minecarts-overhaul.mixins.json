@@ -9,6 +9,7 @@
         "MinecartDispenseItemBehaviorMixin",
         "MinecartFurnaceMixin",
         "NewMinecartBehaviorMixin",
+        "ServerPlayerMixin",
         "WeatheringCopperMixin"
     ],
     "client": [],
