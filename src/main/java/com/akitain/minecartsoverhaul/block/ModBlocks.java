@@ -56,7 +56,9 @@ public final class ModBlocks {
 
         CopperRailBlock block = Registry.register(BuiltInRegistries.BLOCK, blockKey, new CopperRailBlock(state, oxidizing, properties));
         ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, id);
-        Registry.register(BuiltInRegistries.ITEM, itemKey, new BlockItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(itemKey)));
+        BlockItem item = new BlockItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(itemKey));
+        Registry.register(BuiltInRegistries.ITEM, itemKey, item);
+        Item.BY_BLOCK.put(block, item);
         return block;
     }
 }
