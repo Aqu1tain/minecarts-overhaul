@@ -1,12 +1,19 @@
 # Minecarts Overhaul
 
-A Fabric mod for Minecraft 1.21.11 that rethinks minecarts and rail transport.
+Vanilla minecart transport is slow and furnace minecarts are unusable. This mod reworks both systems so minecarts become a viable endgame transport option.
 
 New to the mod? Start with the [[Getting Started]] guide.
+
+## Systems
+
+- [[Copper Rails]] — four oxidation tiers giving maximum speeds of 40, 20, 10 and 5 blocks per second. Waxable, scrapable, oxidize naturally.
+- [[Furnace Minecart]] — accepts any fuel, faces away from the placer, self-propels along its facing while lit.
+- [[Physics]] — horizontal velocity preserved in the air, ice sliding.
 
 ## Links
 
 - [Source](https://github.com/Aqu1tain/minecarts-overhaul) on GitHub
+- [[FAQ]] for common questions
 
 ## Credits
 
