@@ -3,7 +3,7 @@
     "id": "minecarts-overhaul",
     "version": "${version}",
     "name": "Minecarts Overhaul",
-    "description": "Rethinks minecarts and rail transport.",
+    "description": "Copper rails with tiered speeds, self-propelling furnace minecarts, and cleaner rail physics.",
     "authors": ["Aqu1tain"],
     "contributors": ["green_jab"],
     "contact": {
