@@ -8,25 +8,47 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class TrainClientCache {
 
+    private static final long STALE_MILLIS = 3000L;
+
     private static final Map<UUID, List<UUID>> CHAINS = new ConcurrentHashMap<>();
+    private static final Map<UUID, Long> CHAIN_TIMESTAMPS = new ConcurrentHashMap<>();
     private static final Map<UUID, UUID> AHEAD = new ConcurrentHashMap<>();
 
     private TrainClientCache() {}
 
     public static void update(UUID locomotive, List<UUID> trailers) {
         if (trailers.isEmpty()) {
-            List<UUID> previous = CHAINS.remove(locomotive);
-            if (previous != null) {
-                for (UUID uuid : previous) AHEAD.remove(uuid);
-            }
+            removeChain(locomotive);
         } else {
             CHAINS.put(locomotive, trailers);
+            CHAIN_TIMESTAMPS.put(locomotive, System.currentTimeMillis());
             rebuildAheadMap();
         }
     }
 
     public static UUID aheadOf(UUID cart) {
+        evictStale();
         return AHEAD.get(cart);
+    }
+
+    private static void evictStale() {
+        long threshold = System.currentTimeMillis() - STALE_MILLIS;
+        boolean changed = false;
+        for (Map.Entry<UUID, Long> entry : CHAIN_TIMESTAMPS.entrySet()) {
+            if (entry.getValue() < threshold) {
+                UUID locomotive = entry.getKey();
+                CHAINS.remove(locomotive);
+                CHAIN_TIMESTAMPS.remove(locomotive);
+                changed = true;
+            }
+        }
+        if (changed) rebuildAheadMap();
+    }
+
+    private static void removeChain(UUID locomotive) {
+        CHAINS.remove(locomotive);
+        CHAIN_TIMESTAMPS.remove(locomotive);
+        rebuildAheadMap();
     }
 
     private static void rebuildAheadMap() {

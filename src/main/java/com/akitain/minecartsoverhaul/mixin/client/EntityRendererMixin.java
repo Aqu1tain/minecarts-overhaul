@@ -28,9 +28,9 @@ public abstract class EntityRendererMixin {
         Entity ahead = level.getEntity(aheadId);
         if (ahead == null) return;
 
-        Vec3 attachOffset = new Vec3(0.0, 0.4, 0.0);
+        Vec3 attachOffset = new Vec3(0.0, 0.12, 0.0);
         Vec3 start = minecart.getPosition(partialTicks).add(attachOffset);
-        Vec3 end = ahead.getPosition(partialTicks).add(attachOffset);
+        Vec3 end = ahead.getRopeHoldPosition(partialTicks).add(0.0, -0.3, 0.0);
         int startLight = 15;
         int endLight = 15;
 
@@ -42,7 +42,7 @@ public abstract class EntityRendererMixin {
         leash.endBlockLight = endLight;
         leash.startSkyLight = startLight;
         leash.endSkyLight = endLight;
-        leash.slack = true;
+        leash.slack = false;
 
         state.leashStates = new ArrayList<>(1);
         state.leashStates.add(leash);
