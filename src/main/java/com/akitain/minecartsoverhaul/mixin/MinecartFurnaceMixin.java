@@ -13,7 +13,11 @@ import net.minecraft.world.entity.vehicle.minecart.MinecartChest;
 import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BaseRailBlock;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.UUID;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -36,6 +40,7 @@ public abstract class MinecartFurnaceMixin {
     @Unique private static final double DISCONNECT_DISTANCE_SQR = 9.0;
 
     @Unique private final List<AbstractMinecart> train = new ArrayList<>();
+    @Unique private final List<UUID> pendingTrainUuids = new ArrayList<>();
 
     @Shadow private int fuel;
     @Shadow public Vec3 push;
@@ -82,9 +87,46 @@ public abstract class MinecartFurnaceMixin {
         MinecartFurnace self = self();
         if (!(self.level() instanceof ServerLevel serverLevel)) return;
 
+        restorePendingTrain(serverLevel);
         disconnectBroken();
         moveTrailers(serverLevel);
         attachNearby(serverLevel);
+    }
+
+    @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+    private void writeTrain(ValueOutput output, CallbackInfo ci) {
+        output.putInt("TrainSize", train.size());
+        for (int i = 0; i < train.size(); i++) {
+            output.putString("Train" + i, train.get(i).getUUID().toString());
+        }
+    }
+
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void readTrain(ValueInput input, CallbackInfo ci) {
+        pendingTrainUuids.clear();
+        int size = input.getIntOr("TrainSize", 0);
+        for (int i = 0; i < size; i++) {
+            String raw = input.getStringOr("Train" + i, "");
+            if (raw.isEmpty()) continue;
+            try {
+                pendingTrainUuids.add(UUID.fromString(raw));
+            } catch (IllegalArgumentException ignored) {
+            }
+        }
+    }
+
+    @Unique
+    private void restorePendingTrain(ServerLevel level) {
+        if (pendingTrainUuids.isEmpty()) return;
+        for (UUID uuid : pendingTrainUuids) {
+            Entity entity = level.getEntity(uuid);
+            if (entity instanceof AbstractMinecart trailer && !trailer.isRemoved()) {
+                trailer.addTag("train");
+                trailer.setOnRails(true);
+                train.add(trailer);
+            }
+        }
+        pendingTrainUuids.clear();
     }
 
     @Unique
