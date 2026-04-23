@@ -6,6 +6,7 @@
         "AbstractMinecartMixin",
         "GameRulesMixin",
         "HoneycombItemMixin",
+        "MinecartDispenseItemBehaviorMixin",
         "MinecartFurnaceMixin",
         "NewMinecartBehaviorMixin",
         "WeatheringCopperMixin"
