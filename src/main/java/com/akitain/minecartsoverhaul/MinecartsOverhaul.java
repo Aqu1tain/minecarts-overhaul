@@ -1,6 +1,8 @@
 package com.akitain.minecartsoverhaul;
 
 import com.akitain.minecartsoverhaul.block.ModBlocks;
+import com.akitain.minecartsoverhaul.entity.ModEntityTypes;
+import com.akitain.minecartsoverhaul.item.ModItems;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,8 @@ public class MinecartsOverhaul implements ModInitializer {
     @Override
     public void onInitialize() {
         ModBlocks.register();
+        ModEntityTypes.register();
+        ModItems.register();
         LOGGER.info("Minecarts Overhaul loaded");
     }
 }

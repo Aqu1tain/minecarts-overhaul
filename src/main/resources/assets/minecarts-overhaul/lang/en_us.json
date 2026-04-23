@@ -6,5 +6,7 @@
   "block.minecarts-overhaul.waxed_copper_rail": "Waxed Copper Rail",
   "block.minecarts-overhaul.waxed_exposed_copper_rail": "Waxed Exposed Copper Rail",
   "block.minecarts-overhaul.waxed_weathered_copper_rail": "Waxed Weathered Copper Rail",
-  "block.minecarts-overhaul.waxed_oxidized_copper_rail": "Waxed Oxidized Copper Rail"
+  "block.minecarts-overhaul.waxed_oxidized_copper_rail": "Waxed Oxidized Copper Rail",
+  "item.minecarts-overhaul.dispenser_minecart": "Minecart with Dispenser",
+  "entity.minecarts-overhaul.dispenser_minecart": "Minecart with Dispenser"
 }
