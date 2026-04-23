@@ -1,7 +1,11 @@
 package com.akitain.minecartsoverhaul.mixin;
 
+import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,6 +27,22 @@ public class AbstractMinecartMixin {
             target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;getMaxSpeed(Lnet/minecraft/server/level/ServerLevel;)D"))
     private double uncapOffTrackSpeed(AbstractMinecart self, ServerLevel level) {
         return 40.0;
+    }
+
+    @Inject(method = "createMinecart", at = @At("RETURN"))
+    private static <T extends AbstractMinecart> void faceAwayFromPlacer(
+            Level level, double x, double y, double z, net.minecraft.world.entity.EntityType<T> type,
+            net.minecraft.world.entity.EntitySpawnReason reason, net.minecraft.world.item.ItemStack stack,
+            Player player, CallbackInfoReturnable<T> cir,
+            @Local T created) {
+        if (player == null || created == null) return;
+        if (!(created instanceof MinecartFurnace)) return;
+
+        float targetYaw = (-player.getYHeadRot() - 90.0F + 720.0F) % 360.0F;
+        float currentYaw = created.getYRot();
+        if (Mth.cos((float) ((targetYaw - currentYaw) * Math.PI / 180.0)) < 0) {
+            created.setYRot((currentYaw + 180.0F) % 360.0F);
+        }
     }
 
     @Redirect(method = "comeOffTrack", at = @At(
