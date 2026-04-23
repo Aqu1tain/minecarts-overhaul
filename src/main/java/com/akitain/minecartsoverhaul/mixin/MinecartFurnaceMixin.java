@@ -285,29 +285,37 @@ public abstract class MinecartFurnaceMixin {
     private void attachNearby(ServerLevel level) {
         if (train.size() >= MAX_TRAILERS) return;
 
-        MinecartFurnace self = self();
-        AbstractMinecart anchor = train.isEmpty() ? self : train.get(train.size() - 1);
+        AbstractMinecart anchor = train.isEmpty() ? self() : train.get(train.size() - 1);
         if (!anchor.isOnRails()) return;
+
+        List<AbstractMinecart> overlapping = findAttachCandidates(level, anchor.getBoundingBox().inflate(0.2));
+        if (!overlapping.isEmpty()) {
+            attachAll(overlapping);
+            return;
+        }
 
         AbstractMinecart probe = new MinecartChest(EntityType.CHEST_MINECART, level);
         probe.noPhysics = true;
         probe.addTag("train");
         placeProbeBehind(probe, anchor);
         probe.getBehavior().moveAlongTrack(level);
-
-        for (AbstractMinecart candidate : findAttachCandidates(level, probe)) {
-            if (train.size() >= MAX_TRAILERS) break;
-            attach(candidate);
-        }
-
+        attachAll(findAttachCandidates(level, probe.getBoundingBox().inflate(0.2)));
         probe.remove(Entity.RemovalReason.DISCARDED);
     }
 
     @Unique
-    private List<AbstractMinecart> findAttachCandidates(ServerLevel level, AbstractMinecart probe) {
+    private void attachAll(List<AbstractMinecart> candidates) {
+        for (AbstractMinecart candidate : candidates) {
+            if (train.size() >= MAX_TRAILERS) break;
+            attach(candidate);
+        }
+    }
+
+    @Unique
+    private List<AbstractMinecart> findAttachCandidates(ServerLevel level, net.minecraft.world.phys.AABB box) {
         return level.getEntitiesOfClass(
                 AbstractMinecart.class,
-                probe.getBoundingBox().deflate(0.2),
+                box,
                 candidate -> candidate != null
                         && !(candidate instanceof MinecartFurnace)
                         && !candidate.entityTags().contains("train")
