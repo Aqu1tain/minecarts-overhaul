@@ -1,0 +1,25 @@
+{
+    "schemaVersion": 1,
+    "id": "minecarts-overhaul",
+    "version": "${version}",
+    "name": "Minecarts Overhaul",
+    "description": "Rethinks minecarts and rail transport.",
+    "authors": ["Aqu1tain"],
+    "contact": {
+        "sources": "https://github.com/Aqu1tain/minecarts-overhaul"
+    },
+    "license": "All-Rights-Reserved",
+    "icon": "assets/minecarts-overhaul/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": ["com.akitain.minecartsoverhaul.MinecartsOverhaul"],
+        "client": ["com.akitain.minecartsoverhaul.MinecartsOverhaulClient"]
+    },
+    "mixins": ["minecarts-overhaul.mixins.json"],
+    "depends": {
+        "fabricloader": ">=0.18.4",
+        "minecraft": "~26.1",
+        "java": ">=25",
+        "fabric-api": "*"
+    }
+}
