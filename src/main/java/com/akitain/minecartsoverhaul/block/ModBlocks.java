@@ -1,0 +1,51 @@
+package com.akitain.minecartsoverhaul.block;
+
+import com.akitain.minecartsoverhaul.MinecartsOverhaul;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.Identifier;
+
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.WeatheringCopper.WeatherState;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
+
+public final class ModBlocks {
+
+    public static final CopperRailBlock COPPER_RAIL = registerRail("copper_rail", WeatherState.UNAFFECTED, MapColor.COLOR_ORANGE);
+    public static final CopperRailBlock EXPOSED_COPPER_RAIL = registerRail("exposed_copper_rail", WeatherState.EXPOSED, MapColor.TERRACOTTA_WHITE);
+    public static final CopperRailBlock WEATHERED_COPPER_RAIL = registerRail("weathered_copper_rail", WeatherState.WEATHERED, MapColor.WARPED_STEM);
+    public static final CopperRailBlock OXIDIZED_COPPER_RAIL = registerRail("oxidized_copper_rail", WeatherState.OXIDIZED, MapColor.WARPED_NYLIUM);
+
+    public static final CopperRailBlock WAXED_COPPER_RAIL = registerRail("waxed_copper_rail", WeatherState.UNAFFECTED, MapColor.COLOR_ORANGE);
+    public static final CopperRailBlock WAXED_EXPOSED_COPPER_RAIL = registerRail("waxed_exposed_copper_rail", WeatherState.EXPOSED, MapColor.TERRACOTTA_WHITE);
+    public static final CopperRailBlock WAXED_WEATHERED_COPPER_RAIL = registerRail("waxed_weathered_copper_rail", WeatherState.WEATHERED, MapColor.WARPED_STEM);
+    public static final CopperRailBlock WAXED_OXIDIZED_COPPER_RAIL = registerRail("waxed_oxidized_copper_rail", WeatherState.OXIDIZED, MapColor.WARPED_NYLIUM);
+
+    private ModBlocks() {}
+
+    public static void register() {}
+
+    private static CopperRailBlock registerRail(String name, WeatherState state, MapColor color) {
+        Identifier id = Identifier.fromNamespaceAndPath(MinecartsOverhaul.MOD_ID, name);
+        ResourceKey<Block> blockKey = ResourceKey.create(Registries.BLOCK, id);
+        BlockBehaviour.Properties properties = BlockBehaviour.Properties.of()
+                .mapColor(color)
+                .noCollision()
+                .strength(0.7F)
+                .sound(SoundType.METAL)
+                .pushReaction(PushReaction.DESTROY)
+                .setId(blockKey);
+
+        CopperRailBlock block = Registry.register(BuiltInRegistries.BLOCK, blockKey, new CopperRailBlock(state, properties));
+        ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, id);
+        Registry.register(BuiltInRegistries.ITEM, itemKey, new BlockItem(block, new Item.Properties().useBlockDescriptionPrefix().setId(itemKey)));
+        return block;
+    }
+}
