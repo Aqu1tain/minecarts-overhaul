@@ -13,6 +13,8 @@ import net.minecraft.world.entity.vehicle.minecart.MinecartChest;
 import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.BaseRailBlock;
+import net.minecraft.world.level.block.PoweredRailBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -44,6 +46,7 @@ public abstract class MinecartFurnaceMixin {
     @Shadow private int fuel;
     @Shadow public Vec3 push;
     @Shadow protected abstract boolean hasFuel();
+    @Shadow protected abstract void setHasFuel(boolean hasFuel);
 
     @ModifyConstant(method = "getMaxSpeed", constant = @Constant(doubleValue = 0.5))
     private double uncapMaxSpeed(double original) {
@@ -86,10 +89,19 @@ public abstract class MinecartFurnaceMixin {
         MinecartFurnace self = self();
         if (!(self.level() instanceof ServerLevel serverLevel)) return;
 
+        applyPoweredRailToggle(self);
         restorePendingTrain(serverLevel);
         disconnectBroken();
         moveTrailers(serverLevel);
         attachNearby(serverLevel);
+    }
+
+    @Unique
+    private void applyPoweredRailToggle(MinecartFurnace self) {
+        BlockState state = self.level().getBlockState(self.blockPosition());
+        if (!(state.getBlock() instanceof PoweredRailBlock)) return;
+        if (fuel <= 0) return;
+        setHasFuel(state.getValue(PoweredRailBlock.POWERED));
     }
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
