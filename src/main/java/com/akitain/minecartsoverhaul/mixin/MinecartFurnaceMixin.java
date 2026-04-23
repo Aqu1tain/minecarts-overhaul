@@ -1,6 +1,9 @@
 package com.akitain.minecartsoverhaul.mixin;
 
+import com.akitain.minecartsoverhaul.network.TrainPayload;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -99,6 +102,18 @@ public abstract class MinecartFurnaceMixin {
         moveTrailers(serverLevel);
         attachNearby(serverLevel);
         tryPullFuelFromTrailer(self);
+        broadcastTrainState(self);
+    }
+
+    @Unique
+    private void broadcastTrainState(MinecartFurnace self) {
+        if (self.tickCount % 10 != 0) return;
+        List<UUID> trailerIds = new ArrayList<>(train.size());
+        for (AbstractMinecart trailer : train) trailerIds.add(trailer.getUUID());
+        TrainPayload payload = new TrainPayload(self.getUUID(), trailerIds);
+        for (net.minecraft.server.level.ServerPlayer player : PlayerLookup.tracking(self)) {
+            ServerPlayNetworking.send(player, payload);
+        }
     }
 
     @Unique

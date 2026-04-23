@@ -12,7 +12,9 @@
         "ServerPlayerMixin",
         "WeatheringCopperMixin"
     ],
-    "client": [],
+    "client": [
+        "client.EntityRendererMixin"
+    ],
     "injectors": {
         "defaultRequire": 1
     }
