@@ -25,14 +25,16 @@ public class CopperRailBlock extends BaseRailBlock implements WeatheringCopper {
             instance -> instance.group(
                     WeatherState.CODEC.fieldOf("weathering_state").forGetter(CopperRailBlock::getAge),
                     propertiesCodec()
-            ).apply(instance, CopperRailBlock::new)
+            ).apply(instance, (s, p) -> new CopperRailBlock(s, false, p))
     );
 
     private final WeatherState weatherState;
+    private final boolean oxidizing;
 
-    public CopperRailBlock(WeatherState weatherState, BlockBehaviour.Properties properties) {
+    public CopperRailBlock(WeatherState weatherState, boolean oxidizing, BlockBehaviour.Properties properties) {
         super(true, properties);
         this.weatherState = weatherState;
+        this.oxidizing = oxidizing;
         registerDefaultState(stateDefinition.any().setValue(SHAPE, RailShape.NORTH_SOUTH).setValue(WATERLOGGED, false));
     }
 
@@ -58,7 +60,7 @@ public class CopperRailBlock extends BaseRailBlock implements WeatheringCopper {
 
     @Override
     protected boolean isRandomlyTicking(BlockState state) {
-        return WeatheringCopper.getNext(state.getBlock()).isPresent();
+        return oxidizing;
     }
 
     @Override
