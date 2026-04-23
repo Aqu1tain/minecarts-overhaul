@@ -29,6 +29,16 @@ public class AbstractMinecartMixin {
         return 40.0;
     }
 
+    @Inject(method = "canCollideWith", at = @At("HEAD"), cancellable = true)
+    private void skipInternalTrainCollision(net.minecraft.world.entity.Entity other, CallbackInfoReturnable<Boolean> cir) {
+        AbstractMinecart self = (AbstractMinecart) (Object) this;
+        if (!self.entityTags().contains("train")) return;
+        if (!(other instanceof AbstractMinecart otherCart)) return;
+        if (otherCart.entityTags().contains("train") || other instanceof MinecartFurnace) {
+            cir.setReturnValue(false);
+        }
+    }
+
     @Inject(method = "createMinecart", at = @At("RETURN"))
     private static <T extends AbstractMinecart> void faceAwayFromPlacer(
             Level level, double x, double y, double z, net.minecraft.world.entity.EntityType<T> type,
