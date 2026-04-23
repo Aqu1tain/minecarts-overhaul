@@ -74,7 +74,7 @@ public abstract class MinecartFurnaceMixin {
         if (hasFuel()) {
             float yawRad = (float) ((self.getYRot() + 360.0F) % 360.0F * Math.PI / 180.0);
             double pushX = Mth.cos(yawRad) / 40.0;
-            double pushZ = Mth.sin(yawRad) / 40.0;
+            double pushZ = -Mth.sin(yawRad) / 40.0;
             cir.setReturnValue(velocity.add(pushX, 0.0, pushZ));
             return;
         }
