@@ -180,7 +180,6 @@ public abstract class MinecartFurnaceMixin {
             }
             placeProbeBehind(probe, anchor);
             probe.getBehavior().moveAlongTrack(level);
-            trailer.getBehavior().moveAlongTrack(level);
             if (!snapTrailerToProbe(trailer, probe, locomotiveSpeed)) {
                 cascade = false;
                 continue;

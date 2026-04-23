@@ -32,9 +32,10 @@ public class AbstractMinecartMixin {
     @Inject(method = "canCollideWith", at = @At("HEAD"), cancellable = true)
     private void skipInternalTrainCollision(net.minecraft.world.entity.Entity other, CallbackInfoReturnable<Boolean> cir) {
         AbstractMinecart self = (AbstractMinecart) (Object) this;
-        if (!self.entityTags().contains("train")) return;
         if (!(other instanceof AbstractMinecart otherCart)) return;
-        if (otherCart.entityTags().contains("train") || other instanceof MinecartFurnace) {
+        boolean selfInTrain = self instanceof MinecartFurnace || self.entityTags().contains("train");
+        boolean otherInTrain = otherCart instanceof MinecartFurnace || otherCart.entityTags().contains("train");
+        if (selfInTrain && otherInTrain) {
             cir.setReturnValue(false);
         }
     }
