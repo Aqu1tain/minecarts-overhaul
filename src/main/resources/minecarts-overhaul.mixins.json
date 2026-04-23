@@ -2,7 +2,10 @@
     "required": true,
     "package": "com.akitain.minecartsoverhaul.mixin",
     "compatibilityLevel": "JAVA_21",
-    "mixins": [],
+    "mixins": [
+        "AbstractMinecartMixin",
+        "GameRulesMixin"
+    ],
     "client": [],
     "injectors": {
         "defaultRequire": 1
