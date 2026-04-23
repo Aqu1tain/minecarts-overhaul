@@ -1,5 +1,6 @@
 package com.akitain.minecartsoverhaul.mixin;
 
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
@@ -16,6 +17,7 @@ public abstract class MinecartFurnaceMixin {
 
     @Shadow private int fuel;
     @Shadow public Vec3 push;
+    @Shadow protected abstract boolean hasFuel();
 
     @ModifyConstant(method = "getMaxSpeed", constant = @Constant(doubleValue = 0.5))
     private double uncapMaxSpeed(double original) {
@@ -33,5 +35,18 @@ public abstract class MinecartFurnaceMixin {
         fuel += burnTicks;
         push = self.position().subtract(interactingPos).horizontal();
         cir.setReturnValue(true);
+    }
+
+    @Inject(method = "applyNaturalSlowdown", at = @At("HEAD"), cancellable = true)
+    private void propelAlongYaw(Vec3 velocity, CallbackInfoReturnable<Vec3> cir) {
+        MinecartFurnace self = (MinecartFurnace) (Object) this;
+        if (hasFuel()) {
+            float yawRad = (float) ((self.getYRot() + 360.0F) % 360.0F * Math.PI / 180.0);
+            double pushX = Mth.cos(yawRad) / 40.0;
+            double pushZ = Mth.sin(yawRad) / 40.0;
+            cir.setReturnValue(velocity.add(pushX, 0.0, pushZ));
+            return;
+        }
+        cir.setReturnValue(velocity.multiply(0.75, 0.0, 0.75));
     }
 }
