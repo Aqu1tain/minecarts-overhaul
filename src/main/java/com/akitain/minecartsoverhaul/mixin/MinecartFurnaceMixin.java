@@ -49,6 +49,7 @@ public abstract class MinecartFurnaceMixin {
 
     @Unique private final List<AbstractMinecart> train = new ArrayList<>();
     @Unique private final List<UUID> pendingTrainUuids = new ArrayList<>();
+    @Unique private int lastBroadcastSize = -1;
 
     @Shadow private int fuel;
     @Shadow public Vec3 push;
@@ -107,7 +108,11 @@ public abstract class MinecartFurnaceMixin {
 
     @Unique
     private void broadcastTrainState(MinecartFurnace self) {
-        if (self.tickCount % 10 != 0) return;
+        boolean compositionChanged = train.size() != lastBroadcastSize;
+        boolean heartbeat = self.tickCount % 20 == 0;
+        if (!compositionChanged && !heartbeat) return;
+        lastBroadcastSize = train.size();
+
         List<UUID> trailerIds = new ArrayList<>(train.size());
         for (AbstractMinecart trailer : train) trailerIds.add(trailer.getUUID());
         TrainPayload payload = new TrainPayload(self.getUUID(), trailerIds);
@@ -283,17 +288,22 @@ public abstract class MinecartFurnaceMixin {
 
     @Unique
     private void attachNearby(ServerLevel level) {
-        if (train.size() >= MAX_TRAILERS) return;
+        while (train.size() < MAX_TRAILERS) {
+            int sizeBefore = train.size();
+            AbstractMinecart anchor = train.isEmpty() ? self() : train.get(train.size() - 1);
+            if (!anchor.isOnRails()) return;
+            scanAndAttach(level, anchor);
+            if (train.size() == sizeBefore) return;
+        }
+    }
 
-        AbstractMinecart anchor = train.isEmpty() ? self() : train.get(train.size() - 1);
-        if (!anchor.isOnRails()) return;
-
+    @Unique
+    private void scanAndAttach(ServerLevel level, AbstractMinecart anchor) {
         List<AbstractMinecart> overlapping = findAttachCandidates(level, anchor.getBoundingBox().inflate(0.2));
         if (!overlapping.isEmpty()) {
             attachAll(overlapping);
             return;
         }
-
         AbstractMinecart probe = new MinecartChest(EntityType.CHEST_MINECART, level);
         probe.noPhysics = true;
         probe.addTag("train");
