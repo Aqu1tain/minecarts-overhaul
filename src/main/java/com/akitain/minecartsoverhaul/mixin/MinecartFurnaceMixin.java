@@ -1,19 +1,41 @@
 package com.akitain.minecartsoverhaul.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartChest;
 import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Mixin(MinecartFurnace.class)
 public abstract class MinecartFurnaceMixin {
+
+    @Unique private static final int MAX_TRAILERS = 7;
+    @Unique private static final float TRAIN_DISTANCE = 1.5F;
+    @Unique private static final double MAX_SNAP_DISTANCE_SQR = 4.0;
+    @Unique private static final double DISCONNECT_DISTANCE_SQR = 9.0;
+
+    @Unique private final List<AbstractMinecart> train = new ArrayList<>();
 
     @Shadow private int fuel;
     @Shadow public Vec3 push;
@@ -24,9 +46,14 @@ public abstract class MinecartFurnaceMixin {
         return 1.0;
     }
 
+    @ModifyReturnValue(method = "getMaxSpeed", at = @At("RETURN"))
+    private double applyTrainSpeedPenalty(double original) {
+        return original * (1.0 - 0.05 * (train.size() + 1));
+    }
+
     @Inject(method = "addFuel", at = @At("HEAD"), cancellable = true)
     private void acceptAnyFuel(Vec3 interactingPos, ItemStack stack, CallbackInfoReturnable<Boolean> cir) {
-        MinecartFurnace self = (MinecartFurnace) (Object) this;
+        MinecartFurnace self = self();
         int burnTicks = self.level().fuelValues().burnDuration(stack);
         if (burnTicks <= 0 || fuel + burnTicks > 32000) {
             cir.setReturnValue(false);
@@ -39,7 +66,7 @@ public abstract class MinecartFurnaceMixin {
 
     @Inject(method = "applyNaturalSlowdown", at = @At("HEAD"), cancellable = true)
     private void propelAlongYaw(Vec3 velocity, CallbackInfoReturnable<Vec3> cir) {
-        MinecartFurnace self = (MinecartFurnace) (Object) this;
+        MinecartFurnace self = self();
         if (hasFuel()) {
             float yawRad = (float) ((self.getYRot() + 360.0F) % 360.0F * Math.PI / 180.0);
             double pushX = Mth.cos(yawRad) / 40.0;
@@ -48,5 +75,148 @@ public abstract class MinecartFurnaceMixin {
             return;
         }
         cir.setReturnValue(velocity.multiply(0.75, 0.0, 0.75));
+    }
+
+    @Inject(method = "tick", at = @At("TAIL"))
+    private void updateTrain(CallbackInfo ci) {
+        MinecartFurnace self = self();
+        if (!(self.level() instanceof ServerLevel serverLevel)) return;
+
+        disconnectBroken();
+        moveTrailers(serverLevel);
+        attachNearby(serverLevel);
+    }
+
+    @Unique
+    private void disconnectBroken() {
+        for (int i = 0; i < train.size(); i++) {
+            AbstractMinecart trailer = train.get(i);
+            if (isTrainBreakBoundary(trailer, i == 0 ? self() : train.get(i - 1))) {
+                breakTrainAt(i);
+                return;
+            }
+        }
+    }
+
+    @Unique
+    private boolean isTrainBreakBoundary(AbstractMinecart trailer, AbstractMinecart previous) {
+        if (trailer.isRemoved()) return true;
+        if (!trailer.entityTags().contains("train")) return true;
+        if (trailer.onGround() && trailer.getDeltaMovement().horizontalDistance() < 0.01) return true;
+        return trailer.position().distanceToSqr(previous.position()) > DISCONNECT_DISTANCE_SQR;
+    }
+
+    @Unique
+    private void breakTrainAt(int index) {
+        MinecartFurnace self = self();
+        for (int i = train.size() - 1; i >= index; i--) {
+            AbstractMinecart trailer = train.get(i);
+            trailer.removeTag("train");
+            self.level().playSound(null, trailer.blockPosition(), SoundEvents.BAMBOO_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
+            train.remove(i);
+        }
+    }
+
+    @Unique
+    private void moveTrailers(ServerLevel level) {
+        if (train.isEmpty()) return;
+
+        MinecartFurnace self = self();
+        AbstractMinecart probe = new MinecartChest(EntityType.CHEST_MINECART, level);
+        probe.noPhysics = true;
+        probe.addTag("train");
+
+        AbstractMinecart anchor = self;
+        for (AbstractMinecart trailer : train) {
+            placeProbeBehind(probe, anchor);
+            probe.getBehavior().moveAlongTrack(level);
+            snapTrailerToProbe(trailer, probe, anchor);
+            anchor = trailer;
+        }
+
+        probe.remove(Entity.RemovalReason.DISCARDED);
+    }
+
+    @Unique
+    private void placeProbeBehind(AbstractMinecart probe, AbstractMinecart anchor) {
+        probe.setPos(anchor.position());
+        probe.setYRot(anchor.getYRot());
+        probe.setXRot(anchor.getXRot());
+        probe.setOnRails(true);
+        float yawRad = (float) (anchor.getYRot() * Math.PI / 180.0);
+        probe.setDeltaMovement(
+                -TRAIN_DISTANCE * Mth.cos(yawRad),
+                0.0,
+                -TRAIN_DISTANCE * Mth.sin(yawRad)
+        );
+    }
+
+    @Unique
+    private void snapTrailerToProbe(AbstractMinecart trailer, AbstractMinecart probe, AbstractMinecart anchor) {
+        if (trailer.position().distanceToSqr(probe.position()) > MAX_SNAP_DISTANCE_SQR) return;
+        trailer.setPos(probe.position());
+        trailer.setYRot(probe.getYRot());
+        trailer.setXRot(probe.getXRot());
+        float yawRad = (float) (probe.getYRot() * Math.PI / 180.0);
+        double speed = anchor.getDeltaMovement().horizontalDistance();
+        trailer.setDeltaMovement(
+                speed * Mth.cos(yawRad),
+                trailer.getDeltaMovement().y,
+                speed * Mth.sin(yawRad)
+        );
+    }
+
+    @Unique
+    private void attachNearby(ServerLevel level) {
+        if (train.size() >= MAX_TRAILERS) return;
+
+        MinecartFurnace self = self();
+        AbstractMinecart anchor = train.isEmpty() ? self : train.get(train.size() - 1);
+        if (!anchor.isOnRails()) return;
+
+        AbstractMinecart probe = new MinecartChest(EntityType.CHEST_MINECART, level);
+        probe.noPhysics = true;
+        probe.addTag("train");
+        placeProbeBehind(probe, anchor);
+        probe.getBehavior().moveAlongTrack(level);
+
+        for (AbstractMinecart candidate : findAttachCandidates(level, probe)) {
+            if (train.size() >= MAX_TRAILERS) break;
+            attach(candidate);
+        }
+
+        probe.remove(Entity.RemovalReason.DISCARDED);
+    }
+
+    @Unique
+    private List<AbstractMinecart> findAttachCandidates(ServerLevel level, AbstractMinecart probe) {
+        return level.getEntitiesOfClass(
+                AbstractMinecart.class,
+                probe.getBoundingBox().deflate(0.2),
+                candidate -> candidate != null
+                        && !(candidate instanceof MinecartFurnace)
+                        && !candidate.entityTags().contains("train")
+                        && isOnRail(candidate)
+        );
+    }
+
+    @Unique
+    private boolean isOnRail(AbstractMinecart cart) {
+        BlockPos pos = cart.getCurrentBlockPosOrRailBelow();
+        return BaseRailBlock.isRail(cart.level().getBlockState(pos));
+    }
+
+    @Unique
+    private void attach(AbstractMinecart candidate) {
+        MinecartFurnace self = self();
+        candidate.addTag("train");
+        candidate.setOnRails(true);
+        train.add(candidate);
+        self.level().playSound(null, candidate.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 1.0F, 1.0F);
+    }
+
+    @Unique
+    private MinecartFurnace self() {
+        return (MinecartFurnace) (Object) this;
     }
 }
