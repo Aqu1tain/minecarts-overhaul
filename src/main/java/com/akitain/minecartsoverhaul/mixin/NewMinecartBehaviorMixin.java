@@ -24,8 +24,19 @@ public abstract class NewMinecartBehaviorMixin extends MinecartBehavior {
 
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     private void skipTickWhileControlledByTrain(CallbackInfo ci) {
+        if (minecart.tickCount > 60) {
+            minecart.removeTag("train");
+            minecart.removeTag("trainMove");
+        }
         if (minecart.entityTags().contains("trainMove")) {
             ci.cancel();
+        }
+    }
+
+    @Inject(method = "calculateSlopeSpeed", at = @At("HEAD"), cancellable = true)
+    private void skipSlopeSlowdownForFurnace(net.minecraft.world.phys.Vec3 deltaMovement, net.minecraft.world.level.block.state.properties.RailShape shape, org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<net.minecraft.world.phys.Vec3> cir) {
+        if (minecart instanceof MinecartFurnace) {
+            cir.setReturnValue(deltaMovement);
         }
     }
 

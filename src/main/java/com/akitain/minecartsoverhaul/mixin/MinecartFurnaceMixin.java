@@ -248,6 +248,7 @@ public abstract class MinecartFurnaceMixin {
                 continue;
             }
             snapTrailerToProbe(trailer, probe, locomotiveSpeed);
+            trailer.tickCount = 0;
             trailer.addTag("trainMove");
         }
 

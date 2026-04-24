@@ -29,6 +29,30 @@ public class AbstractMinecartMixin {
         return 40.0;
     }
 
+    @Redirect(method = "pushOtherMinecart",
+            at = @At(value = "INVOKE",
+                     target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;push(DDD)V"))
+    private void furnaceIsUnpushable(AbstractMinecart target, double x, double y, double z) {
+        if (target instanceof MinecartFurnace) return;
+        target.push(x, y, z);
+    }
+
+    @Redirect(method = "pushOtherMinecart",
+            at = @At(value = "INVOKE",
+                     target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
+    private void furnaceKeepsMomentum(AbstractMinecart target, Vec3 velocity) {
+        if (target instanceof MinecartFurnace) return;
+        target.setDeltaMovement(velocity);
+    }
+
+    @Redirect(method = "push(Lnet/minecraft/world/entity/Entity;)V",
+            at = @At(value = "INVOKE",
+                     target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;push(DDD)V"))
+    private void trainIsUnpushable(AbstractMinecart target, double x, double y, double z) {
+        if (target.entityTags().contains("train")) return;
+        target.push(x, y, z);
+    }
+
     @Inject(method = "canCollideWith", at = @At("HEAD"), cancellable = true)
     private void skipInternalTrainCollision(net.minecraft.world.entity.Entity other, CallbackInfoReturnable<Boolean> cir) {
         AbstractMinecart self = (AbstractMinecart) (Object) this;
