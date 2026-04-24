@@ -6,9 +6,9 @@ New to the mod? Start with the [[Getting Started]] guide.
 
 ## Systems
 
-- [[Copper Rails]] — four oxidation tiers giving maximum speeds of 40, 20, 10 and 5 blocks per second. Waxable, scrapable, oxidize naturally.
-- [[Furnace Minecart]] — accepts any fuel, faces away from the placer, self-propels along its facing while lit.
-- [[Physics]] — horizontal velocity preserved in the air, ice sliding.
+- [[Copper Rails]]: four oxidation tiers giving maximum speeds of 40, 20, 10 and 5 blocks per second. Waxable, scrapable, oxidize naturally.
+- [[Furnace Minecart]]: accepts any fuel, faces away from the placer, self-propels along its facing while lit.
+- [[Physics]]: horizontal velocity preserved in the air, ice sliding.
 
 ## Links
 

@@ -9,7 +9,7 @@ Make sure you are on 0.2.0 or later. Before the fix, copper rails were not in th
 Copper rails raise the cap but do not push the cart. To hit the tier speed:
 
 - Launch it with a powered rail at the start of the run.
-- Use a [[Furnace Minecart]] with fuel — it self-propels along its facing.
+- Use a [[Furnace Minecart]] with fuel: it self-propels along its facing.
 - Run the cart downhill.
 
 Once the cart is moving, the 90% momentum floor keeps it above 90% of its current speed, so a single low-tier rail between two high-tier ones does not crash the speed.
@@ -24,7 +24,7 @@ Yes. An axe removes one tier of oxidation. An axe on a waxed rail removes the wa
 
 ## Does the furnace minecart still accept only coal?
 
-No. It accepts any item registered as fuel — coal, charcoal, lava buckets, blaze rods, planks. Burn duration matches the fuel's actual value.
+No. It accepts any item registered as fuel: coal, charcoal, lava buckets, blaze rods, planks. Burn duration matches the fuel's actual value.
 
 ## My furnace minecart pushes the wrong direction
 

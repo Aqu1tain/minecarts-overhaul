@@ -1,6 +1,6 @@
 # Copper Rails
 
-Copper rails are a new rail family with tiered speed caps tied to oxidation. They slot into the vanilla rail system — regular rails connect to them, minecarts ride them, the `minecraft:rails` block tag includes them.
+Copper rails are a new rail family with tiered speed caps tied to oxidation. They slot into the vanilla rail system. Regular rails connect to them, minecarts ride them, the `minecraft:rails` block tag includes them.
 
 ## Tiers
 
