@@ -55,7 +55,7 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
 
     @Unique private static final int MAX_TRAILERS = 7;
     @Unique private static final float TRAIN_DISTANCE = 1.5F;
-    @Unique private static final double MAX_SNAP_DISTANCE_SQR = 16.0;
+    @Unique private static final double MAX_SNAP_DISTANCE_SQR = 4.0;
     @Unique private static final int FUEL_TOPUP_THRESHOLD = 100;
 
     @Unique private final List<AbstractMinecart> train = new ArrayList<>();
@@ -244,29 +244,32 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
         double locomotiveSpeed = self.getDeltaMovement().horizontalDistance();
         AbstractMinecart probe = createProbeAtLocomotive(level, self);
 
+        AbstractMinecart previous = self;
         boolean cascade = true;
         for (AbstractMinecart trailer : train) {
             trailer.removeTag("trainMove");
-            if (!cascade) {
-                driveTrailerAlongYaw(trailer, locomotiveSpeed);
-                continue;
-            }
-            if (!isOnRail(trailer)) {
-                driveTrailerAlongYaw(trailer, locomotiveSpeed);
-                trailer.addTag("trainMove");
-                trailer.tickCount = 0;
-                cascade = false;
-                continue;
-            }
-            trailer.getBehavior().moveAlongTrack(level);
-            probe.getBehavior().moveAlongTrack(level);
-            if (trailer.position().distanceToSqr(probe.position()) > MAX_SNAP_DISTANCE_SQR) {
-                cascade = false;
-                continue;
-            }
-            snapTrailerToProbe(trailer, probe, locomotiveSpeed);
+            int previousAge = trailer.tickCount;
             trailer.tickCount = 0;
-            trailer.addTag("trainMove");
+
+            if (cascade && !isOnRail(trailer)) {
+                driveTrailerAlongYaw(trailer, locomotiveSpeed);
+                cascade = false;
+            } else if (cascade) {
+                trailer.getBehavior().moveAlongTrack(level);
+                probe.getBehavior().moveAlongTrack(level);
+                if (trailer.position().distanceToSqr(probe.position()) < MAX_SNAP_DISTANCE_SQR) {
+                    snapTrailerToProbe(trailer, probe, locomotiveSpeed);
+                    trailer.addTag("trainMove");
+                } else {
+                    cascade = false;
+                    trailer.tickCount = previousAge + 10;
+                }
+            }
+
+            if (trailer.position().distanceToSqr(previous.position()) > 9.0) {
+                trailer.tickCount += 10;
+            }
+            previous = trailer;
         }
 
         probe.remove(Entity.RemovalReason.DISCARDED);
@@ -378,7 +381,9 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
     @Unique
     private boolean isOnRail(AbstractMinecart cart) {
         BlockPos pos = cart.getCurrentBlockPosOrRailBelow();
-        return BaseRailBlock.isRail(cart.level().getBlockState(pos));
+        boolean onRail = BaseRailBlock.isRail(cart.level().getBlockState(pos));
+        cart.setOnRails(onRail);
+        return onRail;
     }
 
     @Unique
