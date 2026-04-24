@@ -55,7 +55,7 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
 
     @Unique private static final int MAX_TRAILERS = 7;
     @Unique private static final float TRAIN_DISTANCE = 1.5F;
-    @Unique private static final double MIN_SNAP_DISTANCE_SQR = 4.0;
+    @Unique private static final double MIN_SNAP_DISTANCE_SQR = 9.0;
     @Unique private static final int FUEL_TOPUP_THRESHOLD = 100;
 
     @Unique private final List<AbstractMinecart> train = new ArrayList<>();
