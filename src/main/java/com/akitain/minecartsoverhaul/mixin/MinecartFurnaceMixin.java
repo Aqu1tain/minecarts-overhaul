@@ -55,7 +55,7 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
 
     @Unique private static final int MAX_TRAILERS = 7;
     @Unique private static final float TRAIN_DISTANCE = 1.5F;
-    @Unique private static final double MAX_SNAP_DISTANCE_SQR = 4.0;
+    @Unique private static final double MIN_SNAP_DISTANCE_SQR = 4.0;
     @Unique private static final int FUEL_TOPUP_THRESHOLD = 100;
 
     @Unique private final List<AbstractMinecart> train = new ArrayList<>();
@@ -243,6 +243,7 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
         }
 
         double locomotiveSpeed = self.getDeltaMovement().horizontalDistance();
+        double snapThresholdSqr = Math.max(MIN_SNAP_DISTANCE_SQR, (locomotiveSpeed + TRAIN_DISTANCE) * (locomotiveSpeed + TRAIN_DISTANCE));
         AbstractMinecart probe = createProbeAtLocomotive(level, self);
 
         AbstractMinecart previous = self;
@@ -258,7 +259,7 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
             } else if (cascade) {
                 trailer.getBehavior().moveAlongTrack(level);
                 probe.getBehavior().moveAlongTrack(level);
-                if (trailer.position().distanceToSqr(probe.position()) < MAX_SNAP_DISTANCE_SQR) {
+                if (trailer.position().distanceToSqr(probe.position()) < snapThresholdSqr) {
                     snapTrailerToProbe(trailer, probe, locomotiveSpeed);
                     trailer.addTag("trainMove");
                 } else {
