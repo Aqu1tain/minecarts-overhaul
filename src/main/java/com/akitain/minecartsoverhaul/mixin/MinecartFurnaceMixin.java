@@ -258,6 +258,7 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
                 cascade = false;
             } else if (cascade) {
                 trailer.getBehavior().moveAlongTrack(level);
+                renormalizeProbeVelocity(probe);
                 probe.getBehavior().moveAlongTrack(level);
                 if (trailer.position().distanceToSqr(probe.position()) < snapThresholdSqr) {
                     snapTrailerToProbe(trailer, probe, locomotiveSpeed);
@@ -308,6 +309,15 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
                 0.0,
                 TRAIN_DISTANCE * Mth.sin(yawRad)
         );
+    }
+
+    @Unique
+    private void renormalizeProbeVelocity(AbstractMinecart probe) {
+        Vec3 current = probe.getDeltaMovement();
+        Vec3 horizontal = new Vec3(current.x, 0.0, current.z);
+        if (horizontal.lengthSqr() < 1.0E-6) return;
+        Vec3 scaled = horizontal.normalize().scale(TRAIN_DISTANCE / 0.975);
+        probe.setDeltaMovement(scaled.x, current.y, scaled.z);
     }
 
     @Unique
