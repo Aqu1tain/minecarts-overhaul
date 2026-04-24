@@ -226,6 +226,7 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
             AbstractMinecart trailer = train.get(i);
             trailer.removeTag("train");
             trailer.removeTag("trainMove");
+            trailer.tickCount = -50;
             self.level().playSound(null, trailer.blockPosition(), SoundEvents.BAMBOO_BREAK, SoundSource.BLOCKS, 1.0F, 1.0F);
             train.remove(i);
         }
@@ -344,9 +345,9 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
 
     @Unique
     private void scanAndAttach(ServerLevel level, AbstractMinecart anchor) {
-        List<AbstractMinecart> overlapping = findAttachCandidates(level, anchor.getBoundingBox().inflate(0.2));
+        List<AbstractMinecart> overlapping = findAttachCandidates(level, anchor.getBoundingBox().deflate(0.2));
         if (!overlapping.isEmpty()) {
-            attachAll(overlapping);
+            attachAll(overlapping, anchor);
             return;
         }
         AbstractMinecart probe = new MinecartChest(EntityType.CHEST_MINECART, level);
@@ -354,15 +355,15 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
         probe.addTag("train");
         placeProbeBehind(probe, anchor);
         probe.getBehavior().moveAlongTrack(level);
-        attachAll(findAttachCandidates(level, probe.getBoundingBox().inflate(0.2)));
+        attachAll(findAttachCandidates(level, probe.getBoundingBox().deflate(0.2)), anchor);
         probe.remove(Entity.RemovalReason.DISCARDED);
     }
 
     @Unique
-    private void attachAll(List<AbstractMinecart> candidates) {
+    private void attachAll(List<AbstractMinecart> candidates, AbstractMinecart anchor) {
         for (AbstractMinecart candidate : candidates) {
             if (train.size() >= MAX_TRAILERS) break;
-            attach(candidate);
+            attach(candidate, train.isEmpty() ? anchor : train.get(train.size() - 1));
         }
     }
 
@@ -387,11 +388,22 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
     }
 
     @Unique
-    private void attach(AbstractMinecart candidate) {
+    private void attach(AbstractMinecart candidate, AbstractMinecart anchor) {
         MinecartFurnace self = self();
         candidate.addTag("train");
         candidate.addTag("trainMove");
         candidate.setOnRails(true);
+        candidate.setDeltaMovement(anchor.getDeltaMovement().add(0.0, 0.1, 0.0));
+        candidate.setPos(anchor.position());
+        candidate.setXRot(anchor.getXRot());
+        if (candidate instanceof com.akitain.minecartsoverhaul.entity.DispenserMinecart dispenser) {
+            double yawDiff = (candidate.getYRot() - anchor.getYRot()) * Math.PI / 180.0;
+            if (Math.acos(Math.cos(yawDiff)) > Math.PI / 2.0) {
+                dispenser.setFlipped(!dispenser.isFlipped());
+            }
+        }
+        candidate.setYRot((anchor.getYRot() + 360.0F) % 360.0F);
+        candidate.tickCount = 0;
         train.add(candidate);
         self.level().playSound(null, candidate.blockPosition(), SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.BLOCKS, 1.0F, 1.0F);
     }

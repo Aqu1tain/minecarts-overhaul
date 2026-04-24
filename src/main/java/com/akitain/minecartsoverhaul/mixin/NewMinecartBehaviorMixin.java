@@ -60,7 +60,7 @@ public abstract class NewMinecartBehaviorMixin extends MinecartBehavior {
 
     @Inject(method = "getSlowdownFactor", at = @At("HEAD"), cancellable = true)
     private void consistentTrainSlowdown(org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Double> cir) {
-        if (minecart.entityTags().contains("train")) {
+        if (minecart.tickCount < 0 || minecart.entityTags().contains("train")) {
             cir.setReturnValue(0.975);
         }
     }
