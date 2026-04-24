@@ -1,5 +1,6 @@
 package com.akitain.minecartsoverhaul.mixin;
 
+import com.akitain.minecartsoverhaul.entity.TrainLocomotive;
 import com.akitain.minecartsoverhaul.network.TrainPayload;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
@@ -40,7 +41,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(MinecartFurnace.class)
-public abstract class MinecartFurnaceMixin {
+public abstract class MinecartFurnaceMixin implements TrainLocomotive {
+
+    @Override
+    public void dropTrain() {
+        for (AbstractMinecart trailer : train) {
+            trailer.removeTag("train");
+            trailer.removeTag("trainMove");
+        }
+        train.clear();
+    }
+
 
     @Unique private static final int MAX_TRAILERS = 7;
     @Unique private static final float TRAIN_DISTANCE = 1.5F;
@@ -236,8 +247,14 @@ public abstract class MinecartFurnaceMixin {
         boolean cascade = true;
         for (AbstractMinecart trailer : train) {
             trailer.removeTag("trainMove");
-            if (!cascade) continue;
+            if (!cascade) {
+                driveTrailerAlongYaw(trailer, locomotiveSpeed);
+                continue;
+            }
             if (!isOnRail(trailer)) {
+                driveTrailerAlongYaw(trailer, locomotiveSpeed);
+                trailer.addTag("trainMove");
+                trailer.tickCount = 0;
                 cascade = false;
                 continue;
             }
@@ -285,6 +302,14 @@ public abstract class MinecartFurnaceMixin {
                 0.0,
                 TRAIN_DISTANCE * Mth.sin(yawRad)
         );
+    }
+
+    @Unique
+    private void driveTrailerAlongYaw(AbstractMinecart trailer, double speed) {
+        float yawRad = (float) (trailer.getYRot() * Math.PI / 180.0);
+        double dx = Mth.cos(yawRad) * speed;
+        double dz = -Mth.sin(yawRad) * speed;
+        trailer.setDeltaMovement(dx, trailer.getDeltaMovement().y, dz);
     }
 
     @Unique

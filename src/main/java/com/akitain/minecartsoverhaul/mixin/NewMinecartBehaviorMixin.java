@@ -28,9 +28,20 @@ public abstract class NewMinecartBehaviorMixin extends MinecartBehavior {
             minecart.removeTag("train");
             minecart.removeTag("trainMove");
         }
+        if (isTrainMember()) {
+            minecart.fallDistance = 0.0;
+            for (net.minecraft.world.entity.Entity passenger : minecart.getPassengers()) {
+                passenger.fallDistance = 0.0;
+            }
+        }
         if (minecart.entityTags().contains("trainMove")) {
             ci.cancel();
         }
+    }
+
+    @org.spongepowered.asm.mixin.Unique
+    private boolean isTrainMember() {
+        return minecart.entityTags().contains("train") || minecart instanceof MinecartFurnace;
     }
 
     @Inject(method = "calculateSlopeSpeed", at = @At("HEAD"), cancellable = true)
