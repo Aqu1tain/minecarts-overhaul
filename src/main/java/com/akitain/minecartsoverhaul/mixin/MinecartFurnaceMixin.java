@@ -265,6 +265,7 @@ public abstract class MinecartFurnaceMixin implements TrainLocomotive {
                 } else {
                     cascade = false;
                     trailer.tickCount = previousAge + 10;
+                    driveTrailerAlongYaw(trailer, locomotiveSpeed);
                 }
             }
 
