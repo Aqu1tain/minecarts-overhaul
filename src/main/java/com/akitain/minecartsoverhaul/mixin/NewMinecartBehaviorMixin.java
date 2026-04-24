@@ -40,6 +40,20 @@ public abstract class NewMinecartBehaviorMixin extends MinecartBehavior {
         }
     }
 
+    @Inject(method = "calculateHaltTrackSpeed", at = @At("HEAD"), cancellable = true)
+    private void skipPoweredRailHaltForTrain(net.minecraft.world.phys.Vec3 deltaMovement, net.minecraft.world.level.block.state.BlockState state, org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<net.minecraft.world.phys.Vec3> cir) {
+        if (minecart.entityTags().contains("train")) {
+            cir.setReturnValue(deltaMovement);
+        }
+    }
+
+    @Inject(method = "getSlowdownFactor", at = @At("HEAD"), cancellable = true)
+    private void consistentTrainSlowdown(org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable<Double> cir) {
+        if (minecart.entityTags().contains("train")) {
+            cir.setReturnValue(0.975);
+        }
+    }
+
     @Inject(method = "getMaxSpeed", at = @At("HEAD"), cancellable = true)
     private void applyCopperRailAndMomentum(ServerLevel level, CallbackInfoReturnable<Double> cir) {
         BlockState state = level.getBlockState(minecart.blockPosition());
