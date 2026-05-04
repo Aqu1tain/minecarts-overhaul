@@ -85,6 +85,8 @@ public class MinecartsOverhaul implements ModInitializer {
             entries.addAfter(WAXED_EXPOSED_COPPER_RAIL_ITEM, WAXED_WEATHERED_COPPER_RAIL_ITEM);
             entries.addAfter(WAXED_WEATHERED_COPPER_RAIL_ITEM, WAXED_OXIDIZED_COPPER_RAIL_ITEM);
         });
+        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries ->
+                entries.addAfter(Items.COPPER_INGOT, PATINA));
         LOGGER.info("Minecarts Overhaul loaded");
     }
 
