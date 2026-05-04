@@ -7,5 +7,7 @@
     "block.minecarts-overhaul.waxed_exposed_copper_rail": "מסילת נחושת חשופה מצופת שעווה",
     "block.minecarts-overhaul.waxed_weathered_copper_rail": "מסילת נחושת בלויה מצופת שעווה",
     "block.minecarts-overhaul.waxed_oxidized_copper_rail": "מסילת נחושת מחומצנת מצופת שעווה",
-    "item.minecarts-overhaul.patina": "Patina"
+    "item.minecarts-overhaul.patina": "Patina",
+    "item.minecarts-overhaul.dispenser_minecart": "קרונית עם מפיץ",
+    "entity.minecarts-overhaul.dispenser_minecart": "קרונית עם מפיץ"
 }

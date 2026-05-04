@@ -7,5 +7,7 @@
     "block.minecarts-overhaul.waxed_exposed_copper_rail": "Binario Di Rame Corroso Cerato",
     "block.minecarts-overhaul.waxed_weathered_copper_rail": "Binario Di Rame Ossidato Cerato",
     "block.minecarts-overhaul.waxed_oxidized_copper_rail": "Binario Di Rame Ossidato Cerato",
-    "item.minecarts-overhaul.patina": "Patina"
+    "item.minecarts-overhaul.patina": "Patina",
+    "item.minecarts-overhaul.dispenser_minecart": "Carrello da miniera con distributore",
+    "entity.minecarts-overhaul.dispenser_minecart": "Carrello da miniera con distributore"
 }

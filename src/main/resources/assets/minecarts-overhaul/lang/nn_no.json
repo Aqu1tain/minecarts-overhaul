@@ -7,5 +7,7 @@
     "block.minecarts-overhaul.waxed_exposed_copper_rail": "Voksa utsett koparskjene",
     "block.minecarts-overhaul.waxed_weathered_copper_rail": "Voksa vêrbitt koparskjene",
     "block.minecarts-overhaul.waxed_oxidized_copper_rail": "Voksa oksidert koparskjene",
-    "item.minecarts-overhaul.patina": "Patina"
+    "item.minecarts-overhaul.patina": "Patina",
+    "item.minecarts-overhaul.dispenser_minecart": "Spreidargruvevogn",
+    "entity.minecarts-overhaul.dispenser_minecart": "Spreidargruvevogn"
 }

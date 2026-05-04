@@ -7,5 +7,7 @@
     "block.minecarts-overhaul.waxed_exposed_copper_rail": "上蠟的斑駁銅軌",
     "block.minecarts-overhaul.waxed_weathered_copper_rail": "上蠟的風化銅軌",
     "block.minecarts-overhaul.waxed_oxidized_copper_rail": "上蠟的氧化銅軌",
-    "item.minecarts-overhaul.patina": "銅綠"
+    "item.minecarts-overhaul.patina": "銅綠",
+    "item.minecarts-overhaul.dispenser_minecart": "發射器礦車",
+    "entity.minecarts-overhaul.dispenser_minecart": "發射器礦車"
 }
