@@ -83,7 +83,7 @@ public abstract class ExperimentalMinecartControllerMixin extends MinecartBehavi
         // trainMove tag is set by the locomotive when it has just placed this trailer; the
         // locomotive owns the trailer's movement this tick so the controller's normal tick
         // would fight it.
-        if (this.minecart.getTags().contains(TAG_TRAIN_MOVE)) ci.cancel();
+        if (this.minecart.entityTags().contains(TAG_TRAIN_MOVE)) ci.cancel();
     }
 
     private void resetFallDistance() {
@@ -102,7 +102,7 @@ public abstract class ExperimentalMinecartControllerMixin extends MinecartBehavi
 
     @ModifyExpressionValue(method = "moveAlongTrack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/minecart/NewMinecartBehavior;calculateTrackSpeed(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/vehicle/minecart/NewMinecartBehavior$TrackIteration;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/properties/RailShape;)Lnet/minecraft/world/phys/Vec3;"))
     private Vec3 skipPoweredRailSlowdownForTrains(Vec3 original) {
-        if (this.minecart.noPhysics || this.minecart.getTags().contains(TAG_TRAIN)) {
+        if (this.minecart.noPhysics || this.minecart.entityTags().contains(TAG_TRAIN)) {
             return this.getDeltaMovement().horizontal();
         }
         return original;
@@ -121,7 +121,7 @@ public abstract class ExperimentalMinecartControllerMixin extends MinecartBehavi
     private void forceTrainConsistentRetention(CallbackInfoReturnable<Double> cir) {
         // Negative age = recently disconnected trailer (set by locomotive on cull) so it coasts
         // to a stop at the same rate as any train member instead of vanilla's ridden/empty split.
-        if (this.minecart.tickCount >= 0 && !this.minecart.getTags().contains(TAG_TRAIN)) return;
+        if (this.minecart.tickCount >= 0 && !this.minecart.entityTags().contains(TAG_TRAIN)) return;
         cir.setReturnValue(TRAIN_RETENTION);
         cir.cancel();
     }

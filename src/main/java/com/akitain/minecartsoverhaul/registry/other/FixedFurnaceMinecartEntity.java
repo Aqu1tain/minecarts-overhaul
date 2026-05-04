@@ -86,12 +86,12 @@ public class FixedFurnaceMinecartEntity extends MinecartFurnace {
             Entity entity = this.level().getEntity(trainUuids.get(i));
             if (!(entity instanceof AbstractMinecart minecart)) continue;
             minecart.tickCount = 0;
-            minecart.getTags().clear();
+            minecart.entityTags().clear();
             // Stash the successor's UUID as a command tag so client-side code can walk the chain
             // without keeping its own cache. Cleared after 30 ticks by AbstractMinecartEntityMixin.
             int next = i + 1;
             if (next < trainUuids.size()) {
-                minecart.getTags().add(trainUuids.get(next).toString());
+                minecart.entityTags().add(trainUuids.get(next).toString());
             }
             train.add(minecart);
         }
@@ -339,7 +339,7 @@ public class FixedFurnaceMinecartEntity extends MinecartFurnace {
         return world.getEntitiesOfClass(AbstractMinecart.class, box,
                 e -> e != null
                         && !(e instanceof MinecartFurnace)
-                        && !e.getTags().contains(TAG_TRAIN));
+                        && !e.entityTags().contains(TAG_TRAIN));
     }
 
     private boolean isOnRail(AbstractMinecart m) {
@@ -386,7 +386,7 @@ public class FixedFurnaceMinecartEntity extends MinecartFurnace {
         if (trailer == null) return true;
         if (trailer.isRemoved()) return true;
         if (trailer.onGround() && trailer.getDeltaMovement().horizontalDistance() < GROUND_STOP_THRESHOLD) return true;
-        return !trailer.getTags().contains(TAG_TRAIN);
+        return !trailer.entityTags().contains(TAG_TRAIN);
     }
 
     private void emitSmokeWhenLit() {

@@ -97,7 +97,7 @@ public abstract class AbstractMinecartEntityMixin extends VehicleEntity {
 
     @Redirect(method = "push(Lnet/minecraft/world/entity/Entity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;push(DDD)V"))
     private void trainMinecartsCantBePushed(AbstractMinecart instance, double x, double y, double z) {
-        if (instance.getTags().contains(TAG_TRAIN)) return;
+        if (instance.entityTags().contains(TAG_TRAIN)) return;
         instance.push(x, y, z);
     }
 
@@ -127,7 +127,7 @@ public abstract class AbstractMinecartEntityMixin extends VehicleEntity {
         // first cascade tick after load can drive them.
         this.tickCount = 0;
         this.removeTag(TAG_TRAIN_NO_ENGINE);
-        if (this.getTags().contains(TAG_TRAIN)) this.addTag(TAG_TRAIN_MOVE);
+        if (this.entityTags().contains(TAG_TRAIN)) this.addTag(TAG_TRAIN_MOVE);
     }
 
     @Inject(method = "canCollideWith", at = @At(value = "RETURN"), cancellable = true)
@@ -154,7 +154,7 @@ public abstract class AbstractMinecartEntityMixin extends VehicleEntity {
 
     @Unique
     private static boolean isTrainMember(Entity e) {
-        return e.getTags().contains(TAG_TRAIN) || e.getTags().contains(TAG_TRAIN_TP);
+        return e.entityTags().contains(TAG_TRAIN) || e.entityTags().contains(TAG_TRAIN_TP);
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
@@ -163,6 +163,6 @@ public abstract class AbstractMinecartEntityMixin extends VehicleEntity {
         // across reconnects since the client never sees the disconnect events that clear them.
         if (!this.level().isClientSide()) return;
         if (this.tickCount != CLIENT_TAG_CLEAR_AGE) return;
-        this.getTags().clear();
+        this.entityTags().clear();
     }
 }

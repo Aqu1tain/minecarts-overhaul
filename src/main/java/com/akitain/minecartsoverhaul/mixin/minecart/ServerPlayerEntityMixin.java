@@ -19,7 +19,7 @@ public abstract class ServerPlayerEntityMixin {
         ServerPlayer self = (ServerPlayer) (Object) this;
         Entity vehicle = self.getVehicle();
         if (!(vehicle instanceof AbstractMinecart cart)) return;
-        if (!cart.getTags().contains("train")) return;
+        if (!cart.entityTags().contains("train")) return;
         self.stopRiding();
     }
 }
