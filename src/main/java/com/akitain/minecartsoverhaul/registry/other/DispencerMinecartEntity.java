@@ -68,18 +68,18 @@ public class DispencerMinecartEntity extends AbstractMinecartContainer {
         this.entityData.set(POWERED, powered);
     }
 
-    protected boolean isFlipped() {
+    protected boolean isDispenseFlipped() {
         return this.entityData.get(FLIPPED);
     }
 
-    protected void setFlipped(boolean flipped) {
+    protected void setDispenseFlipped(boolean flipped) {
         this.entityData.set(FLIPPED, flipped);
     }
 
     @Override
     public BlockState getDefaultDisplayBlockState() {
         return Blocks.DISPENSER.defaultBlockState()
-                .setValue(DispenserBlock.FACING, isFlipped() ? Direction.WEST : Direction.EAST)
+                .setValue(DispenserBlock.FACING, isDispenseFlipped() ? Direction.WEST : Direction.EAST)
                 .setValue(DispenserBlock.TRIGGERED, isPowered());
     }
 
@@ -103,14 +103,14 @@ public class DispencerMinecartEntity extends AbstractMinecartContainer {
         // Yaw maps East to East but South to North on the Z axis, so flip Z-axis direction
         // to align with the visual "front" of the cart.
         if (dir.getAxis() == Direction.Axis.Z) dir = dir.getOpposite();
-        if (isFlipped()) dir = dir.getOpposite();
+        if (isDispenseFlipped()) dir = dir.getOpposite();
         return dir;
     }
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
         if (!player.isSecondaryUseActive()) return super.interact(player, hand);
-        setFlipped(!isFlipped());
+        setDispenseFlipped(!isDispenseFlipped());
         return InteractionResult.SUCCESS;
     }
 
@@ -122,7 +122,7 @@ public class DispencerMinecartEntity extends AbstractMinecartContainer {
         proxy.setItems(snapshot);
 
         BlockSource pointer = new BlockSource(world, pos, state, proxy);
-        int slot = proxy.getRandomSlot(world.random);
+        int slot = proxy.getRandomSlot(world.getRandom());
         if (slot < 0) {
             world.levelEvent(LevelEvent.SOUND_DISPENSER_FAIL, pos, 0);
             world.gameEvent(GameEvent.BLOCK_ACTIVATE, pos, GameEvent.Context.of(proxy.getBlockState()));
@@ -178,14 +178,14 @@ public class DispencerMinecartEntity extends AbstractMinecartContainer {
     protected void addAdditionalSaveData(ValueOutput view) {
         super.addAdditionalSaveData(view);
         view.putShort(NBT_COOLDOWN, (short) this.cooldown);
-        view.putBoolean(NBT_FLIPPED, isFlipped());
+        view.putBoolean(NBT_FLIPPED, isDispenseFlipped());
     }
 
     @Override
     protected void readAdditionalSaveData(ValueInput view) {
         super.readAdditionalSaveData(view);
         this.cooldown = view.getShortOr(NBT_COOLDOWN, (short) 0);
-        setFlipped(view.getBooleanOr(NBT_FLIPPED, false));
+        setDispenseFlipped(view.getBooleanOr(NBT_FLIPPED, false));
     }
 
     @Override

@@ -6,8 +6,8 @@ import com.akitain.minecartsoverhaul.registry.block.OxidizableRailBlock;
 import com.akitain.minecartsoverhaul.registry.item.PatinaItem;
 import com.akitain.minecartsoverhaul.registry.other.DispencerMinecartEntity;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTabOutput;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -76,17 +76,17 @@ public class MinecartsOverhaul implements ModInitializer {
     @Override
     public void onInitialize() {
         TrainPayload.register();
-        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.REDSTONE_BLOCKS).register(MinecartsOverhaul::addRedstoneTabEntries);
-        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.INGREDIENTS).register(entries ->
-                entries.addAfter(Items.COPPER_INGOT, PATINA));
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.REDSTONE_BLOCKS).register(MinecartsOverhaul::addRedstoneTabEntries);
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS).register(entries ->
+                entries.insertAfter(Items.COPPER_INGOT, PATINA));
         LOGGER.info("Minecarts Overhaul loaded");
     }
 
-    private static void addRedstoneTabEntries(FabricItemGroupEntries entries) {
-        entries.addAfter(Items.HOPPER_MINECART, DISPENSER_MINECART);
+    private static void addRedstoneTabEntries(FabricCreativeModeTabOutput entries) {
+        entries.insertAfter(Items.HOPPER_MINECART, DISPENSER_MINECART);
         ItemLike anchor = Items.POWERED_RAIL;
         for (Item rail : RAIL_ITEMS_IN_ORDER) {
-            entries.addAfter(anchor, rail);
+            entries.insertAfter(anchor, rail);
             anchor = rail;
         }
     }

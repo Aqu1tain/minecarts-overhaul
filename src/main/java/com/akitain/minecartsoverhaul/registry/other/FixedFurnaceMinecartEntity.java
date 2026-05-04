@@ -357,7 +357,7 @@ public class FixedFurnaceMinecartEntity extends MinecartFurnace {
         trailer.setXRot(anchor.getXRot());
         if (trailer instanceof DispencerMinecartEntity dispenser) {
             float yawDelta = trailer.getYRot() - anchor.getYRot();
-            if (Math.acos(Math.cos(yawDelta)) > Math.PI / 2) dispenser.setFlipped(!dispenser.isFlipped());
+            if (Math.acos(Math.cos(yawDelta)) > Math.PI / 2) dispenser.setDispenseFlipped(!dispenser.isDispenseFlipped());
         }
         trailer.setYRot((anchor.getYRot() + 360) % 360);
         trailer.tickCount = 0;
