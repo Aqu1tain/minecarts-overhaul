@@ -28,31 +28,42 @@ public class PatinaItem extends Item {
     @Override
     public ActionResult useOnBlock(ItemUsageContext context) {
         World world = context.getWorld();
-        BlockPos blockPos = context.getBlockPos();
-        BlockState blockState = world.getBlockState(blockPos);
-        Optional<ActionResult> ac = getOxidizedState(blockState).map(/* method_34719 */ blockState2 -> {
-            PlayerEntity playerEntity = context.getPlayer();
-            ItemStack itemStack = context.getStack();
-            if (playerEntity instanceof ServerPlayerEntity serverPlayerEntity) {
-                Criteria.ITEM_USED_ON_BLOCK.trigger(serverPlayerEntity, blockPos, itemStack);
-            }
+        BlockPos pos = context.getBlockPos();
+        BlockState current = world.getBlockState(pos);
+        Optional<BlockState> nextState = nextOxidationState(current);
+        if (nextState.isEmpty()) return ActionResult.PASS;
 
-            itemStack.decrement(1);
-            world.setBlockState(blockPos, blockState2, Block.NOTIFY_ALL_AND_REDRAW);
-            world.emitGameEvent(GameEvent.BLOCK_CHANGE, blockPos, GameEvent.Emitter.of(playerEntity, blockState2));
-            world.syncWorldEvent(playerEntity, WorldEvents.BLOCK_SCRAPED, blockPos, 0);
-            if (blockState.getBlock() instanceof ChestBlock && blockState.get(ChestBlock.CHEST_TYPE) != ChestType.SINGLE) {
-                BlockPos blockPos2 = ChestBlock.getPosInFrontOf(blockPos, blockState);
-                world.emitGameEvent(GameEvent.BLOCK_CHANGE, blockPos2, GameEvent.Emitter.of(playerEntity, world.getBlockState(blockPos2)));
-                world.syncWorldEvent(playerEntity, WorldEvents.BLOCK_SCRAPED, blockPos2, 0);
-            }
-
-            return ActionResult.SUCCESS;
-        });
-        return ac.orElse(ActionResult.PASS);
+        PlayerEntity player = context.getPlayer();
+        ItemStack stack = context.getStack();
+        if (player instanceof ServerPlayerEntity serverPlayer) {
+            Criteria.ITEM_USED_ON_BLOCK.trigger(serverPlayer, pos, stack);
+        }
+        stack.decrement(1);
+        world.setBlockState(pos, nextState.get(), Block.NOTIFY_ALL_AND_REDRAW);
+        world.emitGameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Emitter.of(player, nextState.get()));
+        world.syncWorldEvent(player, WorldEvents.BLOCK_SCRAPED, pos, 0);
+        emitChestPairScrape(world, current, pos, player);
+        return ActionResult.SUCCESS;
     }
 
+    public static Optional<BlockState> nextOxidationState(BlockState state) {
+        return Oxidizable.getIncreasedOxidationBlock(state.getBlock())
+                .map(block -> block.getStateWithProperties(state));
+    }
+
+    /** @deprecated use {@link #nextOxidationState(BlockState)} */
+    @Deprecated
     public static Optional<BlockState> getOxidizedState(BlockState state) {
-        return Oxidizable.getIncreasedOxidationBlock(state.getBlock()).map(block -> block.getStateWithProperties(state));
+        return nextOxidationState(state);
+    }
+
+    private static void emitChestPairScrape(World world, BlockState scraped, BlockPos pos, PlayerEntity player) {
+        // Double chests render as two halves; the partner block needs the same scrape event so
+        // both sides update visually.
+        if (!(scraped.getBlock() instanceof ChestBlock)) return;
+        if (scraped.get(ChestBlock.CHEST_TYPE) == ChestType.SINGLE) return;
+        BlockPos partner = ChestBlock.getPosInFrontOf(pos, scraped);
+        world.emitGameEvent(GameEvent.BLOCK_CHANGE, partner, GameEvent.Emitter.of(player, world.getBlockState(partner)));
+        world.syncWorldEvent(player, WorldEvents.BLOCK_SCRAPED, partner, 0);
     }
 }
