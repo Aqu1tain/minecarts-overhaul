@@ -427,7 +427,7 @@ public class FixedFurnaceMinecartEntity extends MinecartFurnace {
     }
 
     @Override
-    public InteractionResult interact(Player player, InteractionHand hand) {
+    public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
         ItemStack stack = player.getItemInHand(hand);
         if (fuel > 0) this.setHasFuel(true);
         if (!this.level().fuelValues().isFuel(stack)) return InteractionResult.SUCCESS;
