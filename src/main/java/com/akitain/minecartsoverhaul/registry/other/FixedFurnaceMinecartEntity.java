@@ -460,7 +460,7 @@ public class FixedFurnaceMinecartEntity extends MinecartFurnace {
         if (this.level() instanceof ServerLevel serverWorld) {
             serverWorld.resetEmptyTime();
             serverWorld.getChunkSource().addTicketWithRadius(TicketType.PORTAL,
-                    new ChunkPos(this.blockPosition()), 3);
+                    ChunkPos.containing(this.blockPosition()), 3);
         }
         for (AbstractMinecart trailer : train) {
             if (trailer == null) continue;
