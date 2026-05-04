@@ -67,17 +67,14 @@ public class CopperRailBlock extends AbstractRailBlock {
 
     @Override
     protected BlockState rotate(BlockState state, BlockRotation rotation) {
-        RailShape rotated = rotateShape(state.get(SHAPE), rotation);
-        return state.with(SHAPE, rotated);
-    }
-
-    private static RailShape rotateShape(RailShape shape, BlockRotation rotation) {
-        return switch (rotation) {
+        RailShape shape = state.get(SHAPE);
+        RailShape rotated = switch (rotation) {
             case CLOCKWISE_180 -> rotate180(shape);
             case CLOCKWISE_90 -> rotate90Cw(shape);
             case COUNTERCLOCKWISE_90 -> rotate90Ccw(shape);
             case NONE -> shape;
         };
+        return state.with(SHAPE, rotated);
     }
 
     private static RailShape rotate180(RailShape shape) {
@@ -126,31 +123,36 @@ public class CopperRailBlock extends AbstractRailBlock {
 
     @Override
     protected BlockState mirror(BlockState state, BlockMirror mirror) {
-        RailShape mirrored = mirrorShape(state.get(SHAPE), mirror);
+        RailShape shape = state.get(SHAPE);
+        RailShape mirrored = switch (mirror) {
+            case LEFT_RIGHT -> mirrorLeftRight(shape);
+            case FRONT_BACK -> mirrorFrontBack(shape);
+            default -> null;
+        };
         if (mirrored == null) return super.mirror(state, mirror);
         return state.with(SHAPE, mirrored);
     }
 
-    private static RailShape mirrorShape(RailShape shape, BlockMirror mirror) {
-        return switch (mirror) {
-            case LEFT_RIGHT -> switch (shape) {
-                case ASCENDING_NORTH -> RailShape.ASCENDING_SOUTH;
-                case ASCENDING_SOUTH -> RailShape.ASCENDING_NORTH;
-                case SOUTH_EAST -> RailShape.NORTH_EAST;
-                case SOUTH_WEST -> RailShape.NORTH_WEST;
-                case NORTH_WEST -> RailShape.SOUTH_WEST;
-                case NORTH_EAST -> RailShape.SOUTH_EAST;
-                default -> null;
-            };
-            case FRONT_BACK -> switch (shape) {
-                case ASCENDING_EAST -> RailShape.ASCENDING_WEST;
-                case ASCENDING_WEST -> RailShape.ASCENDING_EAST;
-                case SOUTH_EAST -> RailShape.SOUTH_WEST;
-                case SOUTH_WEST -> RailShape.SOUTH_EAST;
-                case NORTH_WEST -> RailShape.NORTH_EAST;
-                case NORTH_EAST -> RailShape.NORTH_WEST;
-                default -> null;
-            };
+    private static RailShape mirrorLeftRight(RailShape shape) {
+        return switch (shape) {
+            case ASCENDING_NORTH -> RailShape.ASCENDING_SOUTH;
+            case ASCENDING_SOUTH -> RailShape.ASCENDING_NORTH;
+            case SOUTH_EAST -> RailShape.NORTH_EAST;
+            case SOUTH_WEST -> RailShape.NORTH_WEST;
+            case NORTH_WEST -> RailShape.SOUTH_WEST;
+            case NORTH_EAST -> RailShape.SOUTH_EAST;
+            default -> null;
+        };
+    }
+
+    private static RailShape mirrorFrontBack(RailShape shape) {
+        return switch (shape) {
+            case ASCENDING_EAST -> RailShape.ASCENDING_WEST;
+            case ASCENDING_WEST -> RailShape.ASCENDING_EAST;
+            case SOUTH_EAST -> RailShape.SOUTH_WEST;
+            case SOUTH_WEST -> RailShape.SOUTH_EAST;
+            case NORTH_WEST -> RailShape.NORTH_EAST;
+            case NORTH_EAST -> RailShape.NORTH_WEST;
             default -> null;
         };
     }
