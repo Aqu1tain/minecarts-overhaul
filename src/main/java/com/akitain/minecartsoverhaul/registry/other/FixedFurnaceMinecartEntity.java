@@ -1,0 +1,398 @@
+package com.akitain.minecartsoverhaul.registry.other;
+
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import com.akitain.minecartsoverhaul.network.TrainPayload;
+import net.minecraft.block.AbstractRailBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.vehicle.AbstractMinecartEntity;
+import net.minecraft.entity.vehicle.ChestMinecartEntity;
+import net.minecraft.entity.vehicle.FurnaceMinecartEntity;
+import net.minecraft.entity.vehicle.HopperMinecartEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsage;
+import net.minecraft.item.Items;
+import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ChunkTicketType;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.storage.ReadView;
+import net.minecraft.storage.WriteView;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.collection.DefaultedList;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.TeleportTarget;
+import net.minecraft.world.World;
+import org.jspecify.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+public class FixedFurnaceMinecartEntity extends FurnaceMinecartEntity {
+    private final ArrayList<AbstractMinecartEntity> train = new ArrayList<>();
+    private final ArrayList<UUID> uuids = new ArrayList<>();
+    private int fuel;
+    public int powerRailSetLit = 0;
+
+    private final float dist = 1.5f;
+
+    public FixedFurnaceMinecartEntity(EntityType<? extends FurnaceMinecartEntity> entityType, World world) { super(entityType, world);}
+
+    public ArrayList<AbstractMinecartEntity> getTrain() { return train; }
+    public void setTrain(ArrayList<UUID> setTrain) {
+        if (!setTrain.isEmpty()) {
+            train.clear();
+            int i = 1;
+            for (UUID uuid : setTrain) {
+                Entity entity = this.getEntityWorld().getEntity(uuid);
+                if (entity instanceof AbstractMinecartEntity minecart) {
+                    minecart.age = 0;
+                    minecart.getCommandTags().clear();
+                    if (i<setTrain.size()) minecart.getCommandTags().add(setTrain.get(i).toString());
+                    train.add(minecart);
+                }
+                i++;
+            }
+        }
+    }
+
+    public static void sendToAround(PlayerManager playerManager, @Nullable PlayerEntity player, double x, double y, double z, double distance, RegistryKey<World> worldKey, CustomPayload payload) {
+        for (int i = 0; i < playerManager.getPlayerList().size(); i++) {
+            ServerPlayerEntity serverPlayerEntity = playerManager.getPlayerList().get(i);
+            if (serverPlayerEntity != player && serverPlayerEntity.getEntityWorld().getRegistryKey() == worldKey) {
+                double d = x - serverPlayerEntity.getX();
+                double e = y - serverPlayerEntity.getY();
+                double f = z - serverPlayerEntity.getZ();
+                if (d * d + e * e + f * f < distance * distance) {
+                    ServerPlayNetworking.send(serverPlayerEntity, payload);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void tick() {
+        if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
+            if (!uuids.isEmpty()) {
+                train.clear();
+                train.add(this);
+                for (UUID uuid : uuids) {
+                    Entity entity = this.getEntityWorld().getEntity(uuid);
+                    if (entity instanceof AbstractMinecartEntity minecart) {
+                        BlockPos var11 = minecart.getRailOrMinecartPos();
+                        BlockState blockState = this.getEntityWorld().getBlockState(var11);
+                        boolean bl = AbstractRailBlock.isRail(blockState);
+                        minecart.setOnRail(bl);
+                        minecart.addCommandTag("train");
+                        minecart.addCommandTag("trainMove");
+                        minecart.age=0;
+                        train.add(minecart);
+                    }
+                }
+                uuids.clear();
+                sendToClient(serverWorld);
+            }
+            if (getEntityWorld().getTime()%20==0) sendToClient(serverWorld);
+        }
+        super.tick();
+        if (!this.getEntityWorld().isClient()) {
+            ServerWorld world = (ServerWorld) this.getEntityWorld();
+            AbstractMinecartEntity fakeMinecart = new ChestMinecartEntity(EntityType.CHEST_MINECART, world);
+            fakeMinecart.noClip = true;
+            fakeMinecart.addCommandTag("train");
+            if (train.isEmpty()) train.add(this);
+
+            if (train.size()>1 && fuel<100) {
+                DefaultedList<ItemStack> inv = null;
+                if (train.get(1) instanceof ChestMinecartEntity chestMinecartEntity) inv = chestMinecartEntity.getInventory();
+                else if (train.get(1) instanceof HopperMinecartEntity hopperMinecartEntity) inv = hopperMinecartEntity.getInventory();
+                if (inv != null) {
+                    for (int i = 0; i < inv.size();i++) {
+                        ItemStack itemStack = inv.get(i);
+                        if (this.getEntityWorld().getFuelRegistry().isFuel(itemStack)) {
+                            int itemFuel = this.getEntityWorld().getFuelRegistry().getFuelTicks(itemStack);
+                            if (itemStack.isOf(Items.LAVA_BUCKET)) {
+                                inv.set(i, Items.BUCKET.getDefaultStack());
+                            } else {
+                                itemStack.decrement(1);
+                            }
+                            fuel += itemFuel;
+                            break;
+                        }
+                    }
+                }
+            }
+            if (powerRailSetLit!=0) {
+                if (fuel > 0) this.setLit(powerRailSetLit==1);
+                powerRailSetLit=0;
+            }
+            if (fuel > 0 && this.isLit()) fuel--;
+            if (fuel <= 0)  this.setLit(false);
+
+            disconnectBadMinecarts(world);
+
+            setFakeMinecart(fakeMinecart, this);
+            fakeMinecart.setVelocity(new Vec3d(-dist, 0, 0).rotateY((float) (fakeMinecart.getYaw()*Math.PI/180f)));
+            boolean rail = true;
+            boolean cont = true;
+            for (int i = 1; i< train.size(); i++) {
+                AbstractMinecartEntity minecart = train.get(i);
+                AbstractMinecartEntity prevMinecart = train.get(i-1);
+                minecart.removeCommandTag("trainMove");
+                if (cont) {
+                    BlockPos var11 = minecart.getRailOrMinecartPos();
+                    BlockState blockState = this.getEntityWorld().getBlockState(var11);
+                    boolean bl = AbstractRailBlock.isRail(blockState);
+                    minecart.setOnRail(bl);
+                    if (!bl) rail = false;
+                    int age = minecart.age;
+                    minecart.age = 0;
+                    if (rail) {
+                        minecart.addCommandTag("trainMove");
+                        minecart.getController().moveOnRail(world);
+                        if (this.isOnRail()) {
+                            fakeMinecart.getController().moveOnRail(world);
+                            if (minecart.getEntityPos().squaredDistanceTo(fakeMinecart.getEntityPos()) < 4) {
+
+                                minecart.setPosition(fakeMinecart.getEntityPos());
+                                minecart.setPitch(fakeMinecart.getPitch());
+                                minecart.setYaw((fakeMinecart.getYaw() + 360) % 360);
+                                Vec3d vel = fakeMinecart.getVelocity()
+                                        .getHorizontal()
+                                        .normalize()
+                                        .multiply(-this.getVelocity().horizontalLength());
+                                minecart.setVelocity(vel.x, minecart.getVelocity().y, vel.z);
+                            } else {
+                                cont = false;
+                                minecart.age=age+10;
+                            }
+                        } else {
+                            Vec3d vel = new Vec3d(1, 0, 0).rotateY((float) (minecart.getYaw() * Math.PI / 180f))
+                                    .getHorizontal().normalize().multiply(this.getVelocity().horizontalLength());
+                            minecart.setVelocity(vel.x, minecart.getVelocity().y, vel.z);
+                        }
+                    }else {
+                        minecart.tick();
+                        Vec3d vel = new Vec3d(1, 0, 0).rotateY((float) (minecart.getYaw() * Math.PI / 180f))
+                                .getHorizontal().normalize().multiply(this.getVelocity().horizontalLength());
+                        minecart.setVelocity(vel.x, minecart.getVelocity().y, vel.z);
+                        minecart.addCommandTag("trainMove");
+                    }
+                }
+                if (minecart.getEntityPos().squaredDistanceTo(prevMinecart.getEntityPos())>9) {
+                    minecart.age+=10;
+                }
+            }
+            if (this.getPortalCooldown()<6) addGoodMinecarts(world, fakeMinecart);
+            fakeMinecart.remove(Entity.RemovalReason.DISCARDED);
+
+        }
+        if (this.isLit() && this.random.nextInt(4) == 0) {
+            this.getEntityWorld().addParticleClient(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY() + 0.8, this.getZ(), 0.0, 0.0, 0.0);
+        }
+    }
+
+    private void sendToClient(ServerWorld serverWorld) {
+        ArrayList<UUID> trainUuids = new ArrayList<>();
+        for (AbstractMinecartEntity entity : train) trainUuids.add(entity.getUuid());
+        TrainPayload payload = new TrainPayload(trainUuids);
+        sendToAround(serverWorld.getServer()
+                        .getPlayerManager(),
+                null,
+                this.getX(),
+                this.getY(),
+                this.getZ(),
+                100,
+                serverWorld.getRegistryKey(),
+                payload
+        );
+    }
+
+    private void setFakeMinecart(AbstractMinecartEntity fakeMinecart, AbstractMinecartEntity minecart) {
+        fakeMinecart.setPosition(minecart.getEntityPos());
+        fakeMinecart.setOnRail(true);
+        fakeMinecart.setPitch(minecart.getPitch());
+        fakeMinecart.setYaw((minecart.getYaw()+360)%360);
+        fakeMinecart.setVelocity(minecart.getVelocity());
+    }
+
+    private void addGoodMinecarts(ServerWorld world, AbstractMinecartEntity fakeMinecart) {
+        int i = train.size()-1;
+        while (i< train.size()&& train.size()<8) {
+            AbstractMinecartEntity lastMinecart = train.get(i);
+            if (lastMinecart.isOnRail()) {
+                List<AbstractMinecartEntity> list = world.getEntitiesByClass(
+                        AbstractMinecartEntity.class,
+                        lastMinecart.getBoundingBox().contract(0.2),
+                        entity -> entity != null && !(entity instanceof FurnaceMinecartEntity) && !entity.getCommandTags().contains("train")
+                );
+                if (list.isEmpty()) {
+                    setFakeMinecart(fakeMinecart, lastMinecart);
+                    fakeMinecart.setVelocity(new Vec3d(-dist, 0, 0).rotateY((float) (fakeMinecart.getYaw()*Math.PI/180f)));
+                    fakeMinecart.getController().moveOnRail(world);
+
+                    list = world.getEntitiesByClass(
+                            AbstractMinecartEntity.class,
+                            fakeMinecart.getBoundingBox().contract(0.2),
+                            entity -> entity != null && !(entity instanceof FurnaceMinecartEntity) &&
+                                      !entity.getCommandTags().contains("train")
+                    );
+                    if (!list.isEmpty()) {
+                        BlockPos var5 = list.get(0).getRailOrMinecartPos();
+                        BlockState blockState = this.getEntityWorld().getBlockState(var5);
+                        if (AbstractRailBlock.isRail(blockState)) {
+                            addMinecart(list.get(0), fakeMinecart);
+                        }
+                    }
+                } else {
+                    for (AbstractMinecartEntity minecart : list) {
+                        if (train.size()<8) {
+                            BlockPos var5 = minecart.getRailOrMinecartPos();
+                            BlockState blockState = this.getEntityWorld().getBlockState(var5);
+                            if (AbstractRailBlock.isRail(blockState)) {
+                                addMinecart(minecart, lastMinecart);
+                            }
+                        }
+                    }
+                }
+            }
+            i++;
+        }
+    }
+
+    private void addMinecart(AbstractMinecartEntity minecart, AbstractMinecartEntity minecart2) {
+        minecart.setOnRail(true);
+        minecart.addCommandTag("train");
+        minecart.addCommandTag("trainMove");
+        minecart.setVelocity(train.get(train.size()-1).getVelocity().add(0, 0.1, 0));
+        minecart.setPosition(minecart2.getEntityPos());
+        minecart.setPitch(minecart2.getPitch());
+        if (minecart instanceof DispencerMinecartEntity dispencerMinecartEntity) {
+            float dif = minecart.getYaw()-minecart2.getYaw();
+            if (Math.acos(Math.cos(dif))>Math.PI/2)dispencerMinecartEntity.setFlipped(!dispencerMinecartEntity.isFlipped());
+        }
+        minecart.setYaw((minecart2.getYaw() + 360) % 360);
+        minecart.age = 0;
+        train.add(minecart);
+        minecart.getEntityWorld()
+                .playSound(minecart, minecart.getBlockPos(), SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.BLOCKS, 1.0F, 1.0F);
+    }
+
+    private void disconnectBadMinecarts(ServerWorld world) {
+        for (int i = 1; i< train.size(); i++) {
+            if (train.get(i) == null || train.get(i).isRemoved()  || (train.get(i).isOnGround()&&train.get(i).getVelocity().horizontalLength()<0.01) || !train.get(i).getCommandTags().contains("train")) {
+                while (train.size()>i) {
+                    train.get(i).removeCommandTag("train");
+                    train.get(i).removeCommandTag("trainMove");
+                    train.get(i).age=-50;
+                    world.playSound(train.get(i), train.get(i).getBlockPos(), SoundEvents.BLOCK_BAMBOO_BREAK, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                    train.remove(i);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected Vec3d applySlowdown(Vec3d velocity) {
+        Vec3d vec3d;
+        if (this.isLit()) {
+            Vec3d push = new Vec3d(1, 0, 0).rotateY((float) (((this.getYaw()+360)%360)*Math.PI/180f));
+            vec3d = this.getVelocity().add(push.getX()/40.0f, 0.0, push.getZ()/40.0f);
+        } else {
+            vec3d = velocity.multiply(0.75, 0.0, 0.75);
+        }
+        return vec3d;
+    }
+
+    @Override
+    protected void writeCustomData(WriteView view) {
+        super.writeCustomData(view);
+        view.putShort("Fuel", (short)this.fuel);
+        view.putShort("TrainLength", (short)train.size());
+        for (int i = 1;i<train.size();i++) {
+            view.putString("Train"+i, String.valueOf(train.get(i).getUuid()));
+        }
+        view.putBoolean("Lit", isLit());
+    }
+
+    @Override
+    protected void readCustomData(ReadView view) {
+        super.readCustomData(view);
+        this.fuel = view.getShort("Fuel", (short)0);
+        int len = view.getShort("TrainLength", (short)0);
+        for (int i = 1;i<len;i++) {
+            String uu = view.getString("Train" + i, "");
+            if (!uu.isEmpty()) {
+                UUID uuid = UUID.fromString(uu);
+                uuids.add(uuid);
+            }
+        }
+        setLit(view.getBoolean("Lit", false));
+    }
+
+
+    @Override
+    public ActionResult interact(PlayerEntity player, Hand hand) {
+        ItemStack itemStack = player.getStackInHand(hand);
+        if (fuel>0) this.setLit(true);
+        if (this.getEntityWorld().getFuelRegistry().isFuel(itemStack)) {
+            int itemFuel = this.getEntityWorld().getFuelRegistry().getFuelTicks(itemStack);
+            if (fuel + itemFuel <= 32000) {
+                fuel += itemFuel;
+                this.setLit(true);
+                if (itemStack.isOf(Items.LAVA_BUCKET)) {
+                    if (!player.isInCreativeMode()) {
+                        ItemStack itemStack2 = ItemUsage.exchangeStack(itemStack, player, Items.BUCKET.getDefaultStack());
+                        player.setStackInHand(hand, itemStack2);
+                    }
+                } else {
+                    itemStack.decrementUnlessCreative(1, player);
+                }
+            }
+        }
+        return ActionResult.SUCCESS;
+    }
+
+    @Override
+    public void remove(Entity.RemovalReason reason) {
+        for (AbstractMinecartEntity minecart : train) {
+            if (minecart!=null) {
+                minecart.removeCommandTag("train");
+                minecart.removeCommandTag("trainMove");
+            }
+        }
+        super.remove(reason);
+    }
+    @Override
+    public Entity teleportTo(TeleportTarget teleportTarget) {
+        if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
+            serverWorld.resetIdleTimeout();
+            serverWorld.getChunkManager().addTicket(ChunkTicketType.PORTAL, new ChunkPos(this.getBlockPos()), 3);
+        }
+        for (AbstractMinecartEntity minecart : train) {
+            if (minecart!=null) {
+                minecart.removeCommandTag("train");
+                minecart.removeCommandTag("trainMove");
+                minecart.addCommandTag("trainTP");
+            }
+        }
+        train.clear();
+        return super.teleportTo(teleportTarget);
+    }
+
+    @Override
+    protected double getMaxSpeed(ServerWorld world) {
+        return super.getMaxSpeed(world) * (1-0.05*train.size());
+    }
+}

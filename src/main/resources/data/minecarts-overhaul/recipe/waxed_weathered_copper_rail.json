@@ -1,20 +1,20 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "category": "blocks",
-  "group": "minecarts-overhaul:copper_rails",
-  "ingredients": [
-    "minecraft:honeycomb",
-    "minecarts-overhaul:weathered_copper_rail",
-    "minecarts-overhaul:weathered_copper_rail",
-    "minecarts-overhaul:weathered_copper_rail",
-    "minecarts-overhaul:weathered_copper_rail",
-    "minecarts-overhaul:weathered_copper_rail",
-    "minecarts-overhaul:weathered_copper_rail",
-    "minecarts-overhaul:weathered_copper_rail",
-    "minecarts-overhaul:weathered_copper_rail"
-  ],
-  "result": {
-    "id": "minecarts-overhaul:waxed_weathered_copper_rail",
-    "count": 8
-  }
+    "type": "minecraft:crafting_shapeless",
+    "category": "blocks",
+    "group": "minecarts-overhaul:copper_rails",
+    "ingredients": [
+        "minecraft:honeycomb",
+        "minecarts-overhaul:weathered_copper_rail",
+        "minecarts-overhaul:weathered_copper_rail",
+        "minecarts-overhaul:weathered_copper_rail",
+        "minecarts-overhaul:weathered_copper_rail",
+        "minecarts-overhaul:weathered_copper_rail",
+        "minecarts-overhaul:weathered_copper_rail",
+        "minecarts-overhaul:weathered_copper_rail",
+        "minecarts-overhaul:weathered_copper_rail"
+    ],
+    "result": {
+        "id": "minecarts-overhaul:waxed_weathered_copper_rail",
+        "count": 8
+    }
 }

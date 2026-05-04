@@ -1,28 +1,28 @@
 package com.akitain.minecartsoverhaul.network;
 
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import com.akitain.minecartsoverhaul.MinecartsOverhaul;
-import net.minecraft.core.UUIDUtil;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.Identifier;
-
-import java.util.List;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.network.codec.PacketCodec;
+import net.minecraft.network.packet.CustomPayload;
+import java.util.ArrayList;
 import java.util.UUID;
 
-public record TrainPayload(UUID locomotive, List<UUID> trailers) implements CustomPacketPayload {
+public record TrainPayload(ArrayList<UUID> train) implements CustomPayload {
+    public static final Id<TrainPayload> PACKET_ID = new Id<>(MinecartsOverhaul.id("train"));
 
-    public static final Type<TrainPayload> TYPE = new Type<>(Identifier.fromNamespaceAndPath(MinecartsOverhaul.MOD_ID, "train"));
-
-    public static final StreamCodec<FriendlyByteBuf, TrainPayload> CODEC = StreamCodec.composite(
-            UUIDUtil.STREAM_CODEC, TrainPayload::locomotive,
-            UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs.list()), TrainPayload::trailers,
+    public static final PacketCodec<RegistryByteBuf, TrainPayload> PACKET_CODEC = PacketCodec.tuple(
+            TrainNetwork.ARRAY_CODEC,
+            TrainPayload::train,
             TrainPayload::new
     );
 
     @Override
-    public Type<TrainPayload> type() {
-        return TYPE;
+    public Id<? extends CustomPayload> getId() {
+        return PACKET_ID;
+    }
+
+    public static void register() {
+        PayloadTypeRegistry.playS2C().register(PACKET_ID, PACKET_CODEC);
     }
 }

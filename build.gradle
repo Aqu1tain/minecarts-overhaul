@@ -1,5 +1,5 @@
 plugins {
-    id 'net.fabricmc.fabric-loom' version '1.15.4'
+    id 'net.fabricmc.fabric-loom-remap' version '1.16.1'
     id 'maven-publish'
 }
 
@@ -11,6 +11,7 @@ base {
 }
 
 loom {
+    accessWidenerPath = file("src/main/resources/minecarts-overhaul.accesswidener")
     runs {
         client {
             client()
@@ -28,12 +29,15 @@ loom {
 }
 
 repositories {
+    maven { url 'https://maven.fabricmc.net/' }
+    mavenCentral()
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
 processResources {

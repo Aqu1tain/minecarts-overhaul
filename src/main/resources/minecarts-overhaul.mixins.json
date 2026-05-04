@@ -1,20 +1,19 @@
 {
     "required": true,
     "package": "com.akitain.minecartsoverhaul.mixin",
-    "compatibilityLevel": "JAVA_21",
+    "compatibilityLevel": "JAVA_17",
     "mixins": [
-        "AbstractMinecartMixin",
-        "EntityTeleportMixin",
-        "GameRulesMixin",
-        "HoneycombItemMixin",
-        "MinecartDispenseItemBehaviorMixin",
-        "MinecartFurnaceMixin",
-        "NewMinecartBehaviorMixin",
-        "ServerPlayerMixin",
-        "WeatheringCopperMixin"
-    ],
-    "client": [
-        "client.EntityRendererMixin"
+        "minecart.AbstractMinecartEntityMixin",
+        "minecart.AxeItemMixin",
+        "minecart.EntityTypeMixin",
+        "minecart.ExperimentalMinecartControllerMixin",
+        "minecart.FurnaceMinecartEntityMixin",
+        "minecart.GameRulesMixin",
+        "minecart.HoneycombItemMixin",
+        "minecart.MinecartDispenserBehaviorMixin",
+        "minecart.OxidizableMixin",
+        "minecart.PlayerEntityMixin",
+        "minecart.ServerPlayerEntityMixin"
     ],
     "injectors": {
         "defaultRequire": 1

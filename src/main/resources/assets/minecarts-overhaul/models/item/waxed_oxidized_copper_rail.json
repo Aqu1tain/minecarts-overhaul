@@ -1,6 +1,6 @@
 {
   "parent": "minecraft:item/generated",
   "textures": {
-    "layer0": "minecarts-overhaul:block/oxidized_copper_rail"
+    "layer0": "minecarts-overhaul:item/waxed_oxidized_copper_rail"
   }
 }

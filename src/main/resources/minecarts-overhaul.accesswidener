@@ -1,0 +1,4 @@
+accessWidener v2 named
+
+accessible method net/minecraft/block/Block generateBlockInteractLoot (Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/registry/RegistryKey;Lnet/minecraft/block/BlockState;Lnet/minecraft/block/entity/BlockEntity;Lnet/minecraft/item/ItemStack;Lnet/minecraft/entity/Entity;Ljava/util/function/BiConsumer;)Z
+accessible method net/minecraft/block/entity/DispenserBlockEntity setHeldStacks (Lnet/minecraft/util/collection/DefaultedList;)V
