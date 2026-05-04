@@ -38,7 +38,7 @@ public class AxeItemMixin {
                                   BlockState state, CallbackInfoReturnable<Optional<BlockState>> cir) {
         if (!(world instanceof ServerLevel serverWorld)) return;
         if (!state.isCollisionShapeFullBlock(world, pos)) return;
-        if (world.random.nextFloat() >= SCRAPE_DROP_CHANCE) return;
+        if (world.getRandom().nextFloat() >= SCRAPE_DROP_CHANCE) return;
         ResourceKey<net.minecraft.world.level.storage.loot.LootTable> lootTable = ResourceKey.create(
                 Registries.LOOT_TABLE, MinecartsOverhaul.id(SCRAPE_LOOT_TABLE));
         Block.dropFromBlockInteractLootTable(
