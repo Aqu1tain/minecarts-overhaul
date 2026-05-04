@@ -3,8 +3,8 @@ package com.akitain.minecartsoverhaul.mixin.minecart;
 import com.akitain.minecartsoverhaul.MinecartsOverhaul;
 import com.google.common.collect.ImmutableBiMap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import net.minecraft.block.Block;
-import net.minecraft.item.HoneycombItem;
+import net.minecraft.world.item.HoneycombItem;
+import net.minecraft.world.level.block.Block;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 

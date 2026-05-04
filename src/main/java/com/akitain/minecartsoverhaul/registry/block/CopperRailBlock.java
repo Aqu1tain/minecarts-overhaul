@@ -2,42 +2,42 @@ package com.akitain.minecartsoverhaul.registry.block;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.AbstractRailBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Oxidizable;
-import net.minecraft.block.enums.RailShape;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.BlockMirror;
-import net.minecraft.util.BlockRotation;
+import net.minecraft.world.level.block.BaseRailBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.WeatheringCopper;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.block.state.properties.RailShape;
 
-public class CopperRailBlock extends AbstractRailBlock {
+public class CopperRailBlock extends BaseRailBlock {
 
-    public static final EnumProperty<RailShape> SHAPE = Properties.STRAIGHT_RAIL_SHAPE;
+    public static final EnumProperty<RailShape> SHAPE = BlockStateProperties.RAIL_SHAPE_STRAIGHT;
 
     public static final MapCodec<CopperRailBlock> CODEC = RecordCodecBuilder.mapCodec(
             instance -> instance.group(
-                    Oxidizable.OxidationLevel.CODEC.fieldOf("weathering_state").forGetter(CopperRailBlock::getDegradationLevel),
-                    createSettingsCodec()
+                    WeatheringCopper.WeatherState.CODEC.fieldOf("weathering_state").forGetter(CopperRailBlock::getDegradationLevel),
+                    propertiesCodec()
             ).apply(instance, CopperRailBlock::new)
     );
 
-    public final Oxidizable.OxidationLevel oxidationLevel;
+    public final WeatheringCopper.WeatherState oxidationLevel;
 
-    public CopperRailBlock(Oxidizable.OxidationLevel oxidationLevel, AbstractBlock.Settings settings) {
+    public CopperRailBlock(WeatheringCopper.WeatherState oxidationLevel, BlockBehaviour.Properties settings) {
         super(true, settings);
         this.oxidationLevel = oxidationLevel;
-        this.setDefaultState(this.stateManager.getDefaultState()
-                .with(SHAPE, RailShape.NORTH_SOUTH)
-                .with(WATERLOGGED, false));
+        this.registerDefaultState(this.stateDefinition.any()
+                .setValue(SHAPE, RailShape.NORTH_SOUTH)
+                .setValue(WATERLOGGED, false));
     }
 
     @Override
-    protected MapCodec<? extends AbstractRailBlock> getCodec() {
+    protected MapCodec<? extends BaseRailBlock> codec() {
         return CODEC;
     }
 
@@ -47,11 +47,11 @@ public class CopperRailBlock extends AbstractRailBlock {
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(SHAPE, WATERLOGGED);
     }
 
-    public Oxidizable.OxidationLevel getDegradationLevel() {
+    public WeatheringCopper.WeatherState getDegradationLevel() {
         return oxidationLevel;
     }
 
@@ -66,15 +66,15 @@ public class CopperRailBlock extends AbstractRailBlock {
     }
 
     @Override
-    protected BlockState rotate(BlockState state, BlockRotation rotation) {
-        RailShape shape = state.get(SHAPE);
+    protected BlockState rotate(BlockState state, Rotation rotation) {
+        RailShape shape = state.getValue(SHAPE);
         RailShape rotated = switch (rotation) {
             case CLOCKWISE_180 -> rotate180(shape);
             case CLOCKWISE_90 -> rotate90Cw(shape);
             case COUNTERCLOCKWISE_90 -> rotate90Ccw(shape);
             case NONE -> shape;
         };
-        return state.with(SHAPE, rotated);
+        return state.setValue(SHAPE, rotated);
     }
 
     private static RailShape rotate180(RailShape shape) {
@@ -122,15 +122,15 @@ public class CopperRailBlock extends AbstractRailBlock {
     }
 
     @Override
-    protected BlockState mirror(BlockState state, BlockMirror mirror) {
-        RailShape shape = state.get(SHAPE);
+    protected BlockState mirror(BlockState state, Mirror mirror) {
+        RailShape shape = state.getValue(SHAPE);
         RailShape mirrored = switch (mirror) {
             case LEFT_RIGHT -> mirrorLeftRight(shape);
             case FRONT_BACK -> mirrorFrontBack(shape);
             default -> null;
         };
         if (mirrored == null) return super.mirror(state, mirror);
-        return state.with(SHAPE, mirrored);
+        return state.setValue(SHAPE, mirrored);
     }
 
     private static RailShape mirrorLeftRight(RailShape shape) {

@@ -6,13 +6,13 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.minecraft.block.Block;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.BlockRenderLayer;
-import net.minecraft.client.render.entity.MinecartEntityRenderer;
-import net.minecraft.client.render.entity.model.EntityModelLayers;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.Entity;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.entity.MinecartRenderer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.Block;
 
 public class MinecartsOverhaulClient implements ClientModInitializer {
 
@@ -35,13 +35,13 @@ public class MinecartsOverhaulClient implements ClientModInitializer {
     }
 
     private static void registerCutoutRails() {
-        BlockRenderLayerMap.putBlocks(BlockRenderLayer.CUTOUT, CUTOUT_RAIL_BLOCKS);
+        BlockRenderLayerMap.putBlocks(ChunkSectionLayer.CUTOUT, CUTOUT_RAIL_BLOCKS);
     }
 
     private static void registerDispenserMinecartRenderer() {
         EntityRendererRegistry.register(
                 MinecartsOverhaul.DISPENCER_MINECART_ENTITY_TYPE,
-                ctx -> new MinecartEntityRenderer(ctx, EntityModelLayers.MINECART));
+                ctx -> new MinecartRenderer(ctx, ModelLayers.MINECART));
     }
 
     private static void registerTrainReceiver() {
@@ -49,8 +49,8 @@ public class MinecartsOverhaulClient implements ClientModInitializer {
                 context.client().execute(() -> applyTrainPayload(context.client(), payload)));
     }
 
-    private static void applyTrainPayload(MinecraftClient client, TrainPayload payload) {
-        ClientWorld world = client.world;
+    private static void applyTrainPayload(Minecraft client, TrainPayload payload) {
+        ClientLevel world = client.level;
         if (world == null || payload.train().isEmpty()) return;
         Entity head = world.getEntity(payload.train().get(0));
         if (!(head instanceof FixedFurnaceMinecartEntity locomotive)) return;

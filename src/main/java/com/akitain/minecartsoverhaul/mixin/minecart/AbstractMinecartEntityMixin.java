@@ -3,19 +3,19 @@ package com.akitain.minecartsoverhaul.mixin.minecart;
 import com.akitain.minecartsoverhaul.registry.other.DispencerMinecartEntity;
 import com.akitain.minecartsoverhaul.registry.other.FixedFurnaceMinecartEntity;
 import com.llamalad7.mixinextras.sugar.Local;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.vehicle.AbstractMinecartEntity;
-import net.minecraft.entity.vehicle.ExperimentalMinecartController;
-import net.minecraft.entity.vehicle.FurnaceMinecartEntity;
-import net.minecraft.entity.vehicle.VehicleEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.VehicleEntity;
+import net.minecraft.world.entity.vehicle.minecart.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.minecart.MinecartFurnace;
+import net.minecraft.world.entity.vehicle.minecart.NewMinecartBehavior;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(AbstractMinecartEntity.class)
+@Mixin(AbstractMinecart.class)
 public abstract class AbstractMinecartEntityMixin extends VehicleEntity {
 
     private static final double GENTLE_FALL_Y_THRESHOLD = -0.7;
@@ -41,99 +41,99 @@ public abstract class AbstractMinecartEntityMixin extends VehicleEntity {
     private static final String TAG_TRAIN_NO_ENGINE = "trainNoEngine";
 
     @Shadow
-    public abstract boolean isOnRail();
+    public abstract boolean isOnRails();
 
-    public AbstractMinecartEntityMixin(EntityType<?> entityType, World world) {
+    public AbstractMinecartEntityMixin(EntityType<?> entityType, Level world) {
         super(entityType, world);
     }
 
-    @Inject(method = "areMinecartImprovementsEnabled", at = @At(value = "HEAD"), cancellable = true)
-    private static void improvedMinecarts(World world, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "useExperimentalMovement", at = @At(value = "HEAD"), cancellable = true)
+    private static void improvedMinecarts(Level world, CallbackInfoReturnable<Boolean> cir) {
         cir.setReturnValue(true);
         cir.cancel();
     }
 
-    @Inject(method = "moveOffRail", at = @At(
+    @Inject(method = "comeOffTrack", at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/entity/vehicle/AbstractMinecartEntity;setVelocity(Lnet/minecraft/util/math/Vec3d;)V", ordinal = 1
+            target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V", ordinal = 1
     ), cancellable = true)
-    private void noAirDragInitially(ServerWorld world, CallbackInfo ci) {
+    private void noAirDragInitially(ServerLevel world, CallbackInfo ci) {
         // Below the threshold the cart is in a real fall and vanilla drag should resume; above
         // it (mild downward or upward) we preserve horizontal momentum so a copper-rail launch
         // doesn't get scrubbed by air drag while clearing a small gap.
-        if (this.getVelocity().getY() <= GENTLE_FALL_Y_THRESHOLD) return;
-        this.setVelocity(this.getVelocity().multiply(1, GENTLE_FALL_Y_DRAG, 1));
+        if (this.getDeltaMovement().y() <= GENTLE_FALL_Y_THRESHOLD) return;
+        this.setDeltaMovement(this.getDeltaMovement().multiply(1, GENTLE_FALL_Y_DRAG, 1));
         ci.cancel();
     }
 
-    @Redirect(method = "moveOffRail", at = @At(
+    @Redirect(method = "comeOffTrack", at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/entity/vehicle/AbstractMinecartEntity;getMaxSpeed(Lnet/minecraft/server/world/ServerWorld;)D"))
-    private double clampOffRailToHighCeiling(AbstractMinecartEntity instance, ServerWorld world) {
+            target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;getMaxSpeed(Lnet/minecraft/server/level/ServerLevel;)D"))
+    private double clampOffRailToHighCeiling(AbstractMinecart instance, ServerLevel world) {
         return OFF_RAIL_MAX_SPEED;
     }
 
-    @Redirect(method = "moveOffRail", at = @At(
+    @Redirect(method = "comeOffTrack", at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/entity/vehicle/AbstractMinecartEntity;setVelocity(Lnet/minecraft/util/math/Vec3d;)V", ordinal = 0))
-    private void groundFriction(AbstractMinecartEntity instance, Vec3d vec3d) {
+            target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V", ordinal = 0))
+    private void groundFriction(AbstractMinecart instance, Vec3 vec3d) {
         // Vanilla applies a flat 0.5 friction; using the block's slipperiness lets ice keep the
         // cart sliding when it lands off-rail.
-        double slipperiness = this.getEntityWorld().getBlockState(this.getVelocityAffectingPos()).getBlock().getSlipperiness();
-        instance.setVelocity(instance.getVelocity().multiply(slipperiness));
+        double slipperiness = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction();
+        instance.setDeltaMovement(instance.getDeltaMovement().scale(slipperiness));
     }
 
-    @Redirect(method = "pushAwayFromMinecart", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/AbstractMinecartEntity;addVelocity(DDD)V"))
-    private void furnaceMinecartsCantBePushedAdd(AbstractMinecartEntity instance, double x, double y, double z) {
-        if (instance instanceof FurnaceMinecartEntity) return;
-        instance.addVelocity(x, y, z);
+    @Redirect(method = "pushOtherMinecart", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;push(DDD)V"))
+    private void furnaceMinecartsCantBePushedAdd(AbstractMinecart instance, double x, double y, double z) {
+        if (instance instanceof MinecartFurnace) return;
+        instance.push(x, y, z);
     }
 
-    @Redirect(method = "pushAwayFromMinecart", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/AbstractMinecartEntity;setVelocity(Lnet/minecraft/util/math/Vec3d;)V"))
-    private void furnaceMinecartsCantBePushedSet(AbstractMinecartEntity instance, Vec3d vec3d) {
-        if (instance instanceof FurnaceMinecartEntity) return;
-        instance.setVelocity(vec3d);
+    @Redirect(method = "pushOtherMinecart", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;setDeltaMovement(Lnet/minecraft/world/phys/Vec3;)V"))
+    private void furnaceMinecartsCantBePushedSet(AbstractMinecart instance, Vec3 vec3d) {
+        if (instance instanceof MinecartFurnace) return;
+        instance.setDeltaMovement(vec3d);
     }
 
-    @Redirect(method = "pushAwayFrom", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/vehicle/AbstractMinecartEntity;addVelocity(DDD)V"))
-    private void trainMinecartsCantBePushed(AbstractMinecartEntity instance, double x, double y, double z) {
-        if (instance.getCommandTags().contains(TAG_TRAIN)) return;
-        instance.addVelocity(x, y, z);
+    @Redirect(method = "push(Lnet/minecraft/world/entity/Entity;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;push(DDD)V"))
+    private void trainMinecartsCantBePushed(AbstractMinecart instance, double x, double y, double z) {
+        if (instance.getTags().contains(TAG_TRAIN)) return;
+        instance.push(x, y, z);
     }
 
-    @Redirect(method = "create", at = @At(
+    @Redirect(method = "createMinecart", at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/entity/vehicle/ExperimentalMinecartController;adjustToRail(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Z)V"
+            target = "Lnet/minecraft/world/entity/vehicle/minecart/NewMinecartBehavior;adjustToRails(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)V"
     ))
-    private static <T extends AbstractMinecartEntity> void setSpawnRotation(ExperimentalMinecartController controller, BlockPos blockPos,
+    private static <T extends AbstractMinecart> void setSpawnRotation(NewMinecartBehavior controller, BlockPos blockPos,
                                                                             BlockState blockState, boolean ignoreWeight,
-                                                                            @Local T cart, @Local(argsOnly = true) PlayerEntity player) {
-        controller.adjustToRail(blockPos, blockState, true);
+                                                                            @Local T cart, @Local(argsOnly = true) Player player) {
+        controller.adjustToRails(blockPos, blockState, true);
         if (player == null) return;
-        if (!(cart instanceof FurnaceMinecartEntity || cart instanceof DispencerMinecartEntity)) return;
+        if (!(cart instanceof MinecartFurnace || cart instanceof DispencerMinecartEntity)) return;
         // Face the cart away from the player on placement: compute the player's reverse heading
         // and flip the cart 180 if that points behind the cart's natural rail-aligned yaw.
-        float playerReverseYaw = (-player.headYaw - 90 + 720) % 360;
-        if (Math.cos((playerReverseYaw - cart.getYaw()) * Math.PI / 180f) >= 0) return;
-        cart.setYaw((cart.getYaw() + 180) % 360);
+        float playerReverseYaw = (-player.yHeadRot - 90 + 720) % 360;
+        if (Math.cos((playerReverseYaw - cart.getYRot()) * Math.PI / 180f) >= 0) return;
+        cart.setYRot((cart.getYRot() + 180) % 360);
         // Tiny upward velocity so the rail-snap re-runs next tick with the new yaw.
-        cart.setVelocity(0, PLACEMENT_Y_NUDGE, 0);
-        cart.setYawFlipped(true);
+        cart.setDeltaMovement(0, PLACEMENT_Y_NUDGE, 0);
+        cart.setFlipped(true);
     }
 
-    @Inject(method = "readCustomData", at = @At("TAIL"))
-    private void restoreTrainTagState(ReadView view, CallbackInfo ci) {
+    @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+    private void restoreTrainTagState(ValueInput view, CallbackInfo ci) {
         // Saved trailers come back with `train` but not `trainMove`; re-add it so the locomotive's
         // first cascade tick after load can drive them.
-        this.age = 0;
-        this.removeCommandTag(TAG_TRAIN_NO_ENGINE);
-        if (this.getCommandTags().contains(TAG_TRAIN)) this.addCommandTag(TAG_TRAIN_MOVE);
+        this.tickCount = 0;
+        this.removeTag(TAG_TRAIN_NO_ENGINE);
+        if (this.getTags().contains(TAG_TRAIN)) this.addTag(TAG_TRAIN_MOVE);
     }
 
-    @Inject(method = "collidesWith", at = @At(value = "RETURN"), cancellable = true)
+    @Inject(method = "canCollideWith", at = @At(value = "RETURN"), cancellable = true)
     private void removeTrainCollisions(Entity otherEntity, CallbackInfoReturnable<Boolean> cir) {
         if (!cir.getReturnValue()) return;
-        if (!(otherEntity instanceof AbstractMinecartEntity)) return;
+        if (!(otherEntity instanceof AbstractMinecart)) return;
         cir.setReturnValue(shouldCollide(this, otherEntity));
     }
 
@@ -141,7 +141,7 @@ public abstract class AbstractMinecartEntityMixin extends VehicleEntity {
     private static boolean shouldCollide(Entity self, Entity other) {
         if (selfFurnaceContainsTrailer(self, other)) return false;
         if (!isTrainMember(self)) return true;
-        if (((AbstractMinecartEntity) self).isOnRail()) return false;
+        if (((AbstractMinecart) self).isOnRails()) return false;
         if (isTrainMember(other)) return false;
         if (other instanceof FixedFurnaceMinecartEntity locomotive && locomotive.getTrain().contains(self)) return false;
         return true;
@@ -154,15 +154,15 @@ public abstract class AbstractMinecartEntityMixin extends VehicleEntity {
 
     @Unique
     private static boolean isTrainMember(Entity e) {
-        return e.getCommandTags().contains(TAG_TRAIN) || e.getCommandTags().contains(TAG_TRAIN_TP);
+        return e.getTags().contains(TAG_TRAIN) || e.getTags().contains(TAG_TRAIN_TP);
     }
 
     @Inject(method = "tick", at = @At("HEAD"))
     private void clearClientTrainTags(CallbackInfo ci) {
         // Tags are sent server->client as part of the train sync; without this they'd accumulate
         // across reconnects since the client never sees the disconnect events that clear them.
-        if (!this.getEntityWorld().isClient()) return;
-        if (this.age != CLIENT_TAG_CLEAR_AGE) return;
-        this.getCommandTags().clear();
+        if (!this.level().isClientSide()) return;
+        if (this.tickCount != CLIENT_TAG_CLEAR_AGE) return;
+        this.getTags().clear();
     }
 }

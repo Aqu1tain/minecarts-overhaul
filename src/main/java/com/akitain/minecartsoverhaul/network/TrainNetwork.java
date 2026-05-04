@@ -1,29 +1,28 @@
 package com.akitain.minecartsoverhaul.network;
 
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.encoding.VarInts;
-
 import java.util.ArrayList;
 import java.util.UUID;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.VarInt;
+import net.minecraft.network.codec.StreamCodec;
 
 public final class TrainNetwork {
 
     private TrainNetwork() {}
 
-    public static final PacketCodec<PacketByteBuf, ArrayList<UUID>> ARRAY_CODEC = new PacketCodec<>() {
+    public static final StreamCodec<FriendlyByteBuf, ArrayList<UUID>> ARRAY_CODEC = new StreamCodec<>() {
         @Override
-        public ArrayList<UUID> decode(PacketByteBuf buf) {
-            int length = VarInts.read(buf);
+        public ArrayList<UUID> decode(FriendlyByteBuf buf) {
+            int length = VarInt.read(buf);
             ArrayList<UUID> uuids = new ArrayList<>(length);
-            for (int i = 0; i < length; i++) uuids.add(buf.readUuid());
+            for (int i = 0; i < length; i++) uuids.add(buf.readUUID());
             return uuids;
         }
 
         @Override
-        public void encode(PacketByteBuf buf, ArrayList<UUID> uuids) {
-            VarInts.write(buf, uuids.size());
-            for (UUID uuid : uuids) buf.writeUuid(uuid);
+        public void encode(FriendlyByteBuf buf, ArrayList<UUID> uuids) {
+            VarInt.write(buf, uuids.size());
+            for (UUID uuid : uuids) buf.writeUUID(uuid);
         }
     };
 }

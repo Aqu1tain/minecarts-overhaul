@@ -2,24 +2,23 @@ package com.akitain.minecartsoverhaul.network;
 
 import com.akitain.minecartsoverhaul.MinecartsOverhaul;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public record TrainPayload(ArrayList<UUID> train) implements CustomPayload {
+public record TrainPayload(ArrayList<UUID> train) implements CustomPacketPayload {
 
-    public static final Id<TrainPayload> PACKET_ID = new Id<>(MinecartsOverhaul.id("train"));
+    public static final Type<TrainPayload> PACKET_ID = new Type<>(MinecartsOverhaul.id("train"));
 
-    public static final PacketCodec<RegistryByteBuf, TrainPayload> PACKET_CODEC = PacketCodec.tuple(
+    public static final StreamCodec<RegistryFriendlyByteBuf, TrainPayload> PACKET_CODEC = StreamCodec.composite(
             TrainNetwork.ARRAY_CODEC, TrainPayload::train,
             TrainPayload::new
     );
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return PACKET_ID;
     }
 

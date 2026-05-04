@@ -1,15 +1,6 @@
 package com.akitain.minecartsoverhaul.mixin.minecart;
 
 import com.akitain.minecartsoverhaul.MinecartsOverhaul;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.AxeItem;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,6 +9,15 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Optional;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.AxeItem;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 @Mixin(AxeItem.class)
 public class AxeItemMixin {
@@ -30,25 +30,25 @@ public class AxeItemMixin {
     // Piggy-backs on the vanilla axe-strip path: when an axe successfully scrapes oxidation off a
     // full copper cube, roll the scrape loot table so Patina can drop. Limited to full cubes
     // because rails, bars, grates, etc. don't fit the "block of copper" theme.
-    @Inject(method = "tryStrip", at = @At(
+    @Inject(method = "evaluateNewBlockState", at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/item/AxeItem;strip(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/block/BlockState;Lnet/minecraft/sound/SoundEvent;I)V", ordinal = 0
+            target = "Lnet/minecraft/world/item/AxeItem;spawnSoundAndParticle(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/sounds/SoundEvent;I)V", ordinal = 0
     ))
-    private void addScrapedCopper(World world, BlockPos pos, @Nullable PlayerEntity player,
+    private void addScrapedCopper(Level world, BlockPos pos, @Nullable Player player,
                                   BlockState state, CallbackInfoReturnable<Optional<BlockState>> cir) {
-        if (!(world instanceof ServerWorld serverWorld)) return;
-        if (!state.isFullCube(world, pos)) return;
+        if (!(world instanceof ServerLevel serverWorld)) return;
+        if (!state.isCollisionShapeFullBlock(world, pos)) return;
         if (world.random.nextFloat() >= SCRAPE_DROP_CHANCE) return;
-        RegistryKey<net.minecraft.loot.LootTable> lootTable = RegistryKey.of(
-                RegistryKeys.LOOT_TABLE, MinecartsOverhaul.id(SCRAPE_LOOT_TABLE));
-        Block.generateBlockInteractLoot(
+        ResourceKey<net.minecraft.world.level.storage.loot.LootTable> lootTable = ResourceKey.create(
+                Registries.LOOT_TABLE, MinecartsOverhaul.id(SCRAPE_LOOT_TABLE));
+        Block.dropFromBlockInteractLootTable(
                 serverWorld,
                 lootTable,
                 state,
                 world.getBlockEntity(pos),
                 null,
                 player,
-                (w, stack) -> Block.dropStack(w, pos, stack)
+                (w, stack) -> Block.popResource(w, pos, stack)
         );
     }
 }

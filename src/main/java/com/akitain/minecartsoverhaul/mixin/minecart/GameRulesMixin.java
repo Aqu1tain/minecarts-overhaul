@@ -1,8 +1,8 @@
 package com.akitain.minecartsoverhaul.mixin.minecart;
 
-import net.minecraft.resource.featuretoggle.FeatureFlag;
-import net.minecraft.resource.featuretoggle.FeatureSet;
-import net.minecraft.world.rule.GameRules;
+import net.minecraft.world.flag.FeatureFlag;
+import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.level.gamerules.GameRules;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -16,9 +16,9 @@ public class GameRulesMixin {
     // world unconditionally; an empty FeatureSet drops the flag requirement at registration.
     @Redirect(method = "<clinit>", at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/resource/featuretoggle/FeatureSet;of(Lnet/minecraft/resource/featuretoggle/FeatureFlag;)Lnet/minecraft/resource/featuretoggle/FeatureSet;"
+            target = "Lnet/minecraft/world/flag/FeatureFlagSet;of(Lnet/minecraft/world/flag/FeatureFlag;)Lnet/minecraft/world/flag/FeatureFlagSet;"
     ))
-    private static FeatureSet alwaysExposeMinecartGameRule(FeatureFlag original) {
-        return FeatureSet.empty();
+    private static FeatureFlagSet alwaysExposeMinecartGameRule(FeatureFlag original) {
+        return FeatureFlagSet.of();
     }
 }
