@@ -32,6 +32,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 
 import static net.minecraft.world.level.block.DispenserBlock.DISPENSER_REGISTRY;
 
@@ -108,8 +109,8 @@ public class DispencerMinecartEntity extends AbstractMinecartContainer {
     }
 
     @Override
-    public InteractionResult interact(Player player, InteractionHand hand) {
-        if (!player.isSecondaryUseActive()) return super.interact(player, hand);
+    public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
+        if (!player.isSecondaryUseActive()) return super.interact(player, hand, location);
         setDispenseFlipped(!isDispenseFlipped());
         return InteractionResult.SUCCESS;
     }
