@@ -1,15 +1,19 @@
 package com.akitain.minecartsoverhaul.mixin.minecart;
 
+import com.akitain.minecartsoverhaul.MinecartsOverhaul;
 import com.google.common.collect.ImmutableBiMap;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import com.akitain.minecartsoverhaul.MinecartsOverhaul;
 import net.minecraft.block.Block;
 import net.minecraft.item.HoneycombItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
+// Targets Yarn's intermediary `method_34723`, the static initializer that builds the unwaxed ->
+// waxed bimap. Adding our rails to the same map lets vanilla `HoneycombItem.useOnBlock` and the
+// reverse axe-scrape path recognise them automatically.
 @Mixin(HoneycombItem.class)
-public class HoneycombItemMixin  {
+public class HoneycombItemMixin {
+
     @ModifyExpressionValue(method = "method_34723", at = @At(
             value = "INVOKE",
             target = "Lcom/google/common/collect/ImmutableBiMap;builder()Lcom/google/common/collect/ImmutableBiMap$Builder;"

@@ -7,24 +7,23 @@ import net.minecraft.network.encoding.VarInts;
 import java.util.ArrayList;
 import java.util.UUID;
 
-public class TrainNetwork {
+public final class TrainNetwork {
+
+    private TrainNetwork() {}
+
     public static final PacketCodec<PacketByteBuf, ArrayList<UUID>> ARRAY_CODEC = new PacketCodec<>() {
-        public ArrayList<UUID> decode(PacketByteBuf byteBuf) {
-            int length = VarInts.read(byteBuf);
-            ArrayList<UUID> array = new ArrayList<>();
-            for(int j = 0; j < length; j++) {
-                array.add(byteBuf.readUuid());
-            }
-            return array;
+        @Override
+        public ArrayList<UUID> decode(PacketByteBuf buf) {
+            int length = VarInts.read(buf);
+            ArrayList<UUID> uuids = new ArrayList<>(length);
+            for (int i = 0; i < length; i++) uuids.add(buf.readUuid());
+            return uuids;
         }
 
-        public void encode(PacketByteBuf byteBuf, ArrayList<UUID> array) {
-            ArrayList<UUID> array2 = (ArrayList<UUID>) array.clone();
-            VarInts.write(byteBuf, array.size());
-            for (int i = 0; i < array.size();i++) {
-                byteBuf.writeUuid(array2.get(i));
-            }
+        @Override
+        public void encode(PacketByteBuf buf, ArrayList<UUID> uuids) {
+            VarInts.write(buf, uuids.size());
+            for (UUID uuid : uuids) buf.writeUuid(uuid);
         }
     };
 }
-
