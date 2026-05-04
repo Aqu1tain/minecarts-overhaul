@@ -31,6 +31,11 @@ public class OxidizableRailBlock extends CopperRailBlock implements WeatheringCo
     }
 
     @Override
+    public WeatherState getAge() {
+        return getDegradationLevel();
+    }
+
+    @Override
     public boolean isRandomlyTicking(BlockState state) {
         return WeatheringCopper.getNext(state.getBlock()).isPresent();
     }
