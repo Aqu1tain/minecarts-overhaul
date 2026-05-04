@@ -1,7 +1,0 @@
-{
-  "parent": "minecraft:block/powered_rail",
-  "textures": {
-    "particle": "minecarts-overhaul:block/copper_rail",
-    "rail": "minecarts-overhaul:block/copper_rail"
-  }
-}

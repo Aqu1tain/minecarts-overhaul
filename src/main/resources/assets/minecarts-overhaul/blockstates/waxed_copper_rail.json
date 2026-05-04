@@ -1,24 +1,24 @@
 {
   "variants": {
-    "shape=north_south": {
-      "model": "minecarts-overhaul:block/waxed_copper_rail"
-    },
-    "shape=east_west": {
-      "model": "minecarts-overhaul:block/waxed_copper_rail",
-      "y": 90
-    },
     "shape=ascending_north": {
-      "model": "minecarts-overhaul:block/waxed_copper_rail_raised_ne"
+      "model": "minecarts-overhaul:block/copper_rail/waxed_copper_rail_raised_ne"
     },
     "shape=ascending_east": {
-      "model": "minecarts-overhaul:block/waxed_copper_rail_raised_ne",
+      "model": "minecarts-overhaul:block/copper_rail/waxed_copper_rail_raised_ne",
       "y": 90
     },
     "shape=ascending_south": {
-      "model": "minecarts-overhaul:block/waxed_copper_rail_raised_sw"
+      "model": "minecarts-overhaul:block/copper_rail/waxed_copper_rail_raised_sw"
     },
     "shape=ascending_west": {
-      "model": "minecarts-overhaul:block/waxed_copper_rail_raised_sw",
+      "model": "minecarts-overhaul:block/copper_rail/waxed_copper_rail_raised_sw",
+      "y": 90
+    },
+    "shape=north_south": {
+      "model": "minecarts-overhaul:block/copper_rail/waxed_copper_rail"
+    },
+    "shape=east_west": {
+      "model": "minecarts-overhaul:block/copper_rail/waxed_copper_rail",
       "y": 90
     }
   }

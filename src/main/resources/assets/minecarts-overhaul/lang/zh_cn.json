@@ -1,0 +1,13 @@
+{
+    "block.minecarts-overhaul.copper_rail": "铜轨",
+    "block.minecarts-overhaul.exposed_copper_rail": "斑驳的铜轨",
+    "block.minecarts-overhaul.weathered_copper_rail": "锈蚀的铜轨",
+    "block.minecarts-overhaul.oxidized_copper_rail": "氧化的铜轨",
+    "block.minecarts-overhaul.waxed_copper_rail": "涂蜡的铜轨",
+    "block.minecarts-overhaul.waxed_exposed_copper_rail": "涂蜡的斑驳铜轨",
+    "block.minecarts-overhaul.waxed_weathered_copper_rail": "涂蜡的锈蚀铜轨",
+    "block.minecarts-overhaul.waxed_oxidized_copper_rail": "涂蜡的氧化铜轨",
+    "item.minecarts-overhaul.patina": "铜绿",
+    "item.minecarts-overhaul.dispenser_minecart": "投掷器矿车",
+    "entity.minecarts-overhaul.dispenser_minecart": "投掷器矿车"
+}

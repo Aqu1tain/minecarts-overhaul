@@ -1,17 +1,17 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "key": {
-    "#": "minecraft:stick",
-    "X": "minecraft:copper_ingot"
-  },
-  "pattern": [
-    "X X",
-    "X#X",
-    "X X"
-  ],
-  "result": {
-    "id": "minecarts-overhaul:copper_rail",
-    "count": 12
-  }
+    "type": "minecraft:crafting_shaped",
+    "category": "misc",
+    "key": {
+        "#": "minecraft:stick",
+        "X": "minecraft:copper_ingot"
+    },
+    "pattern": [
+        "X X",
+        "X#X",
+        "X X"
+    ],
+    "result": {
+        "count": 12,
+        "id": "minecarts-overhaul:copper_rail"
+    }
 }

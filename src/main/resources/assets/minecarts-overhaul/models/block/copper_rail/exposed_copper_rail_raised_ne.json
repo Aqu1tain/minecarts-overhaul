@@ -1,0 +1,7 @@
+{
+    "parent": "minecraft:block/powered_rail_raised_ne",
+    "textures": {
+        "particle": "minecarts-overhaul:block/exposed_copper_rail",
+        "rail": "minecarts-overhaul:block/exposed_copper_rail"
+    }
+}

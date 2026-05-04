@@ -1,12 +1,12 @@
 {
   "type": "minecraft:crafting_shapeless",
-  "category": "redstone",
+  "category": "misc",
   "ingredients": [
-    "minecraft:minecart",
-    "minecraft:dispenser"
+    "minecraft:dispenser",
+    "minecraft:minecart"
   ],
   "result": {
-    "id": "minecarts-overhaul:dispenser_minecart",
-    "count": 1
+    "count": 1,
+    "id": "minecarts-overhaul:dispenser_minecart"
   }
 }
