@@ -1,0 +1,11 @@
+{
+    "block.minecarts-overhaul.copper_rail": "Měděná kolej",
+    "block.minecarts-overhaul.exposed_copper_rail": "Měděná kolej s lehkou měděnkou",
+    "block.minecarts-overhaul.weathered_copper_rail": "Měděná kolej se střední měděnkou",
+    "block.minecarts-overhaul.oxidized_copper_rail": "Měděná kolej pokrytá měděnkou",
+    "block.minecarts-overhaul.waxed_copper_rail": "Navoskovaná měděná kolej",
+    "block.minecarts-overhaul.waxed_exposed_copper_rail": "Navoskovaná měděná kolej s lehkou měděnkou",
+    "block.minecarts-overhaul.waxed_weathered_copper_rail": "Navoskovaná měděná kolej se střední měděnkou",
+    "block.minecarts-overhaul.waxed_oxidized_copper_rail": "Navoskovaná měděná kolej pokrytá měděnkou",
+    "item.minecarts-overhaul.patina": "Měděnka"
+}

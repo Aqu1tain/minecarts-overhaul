@@ -1,0 +1,11 @@
+{
+    "block.minecarts-overhaul.copper_rail": "Rails de cuivre",
+    "block.minecarts-overhaul.exposed_copper_rail": "Rails de cuivre exposé",
+    "block.minecarts-overhaul.weathered_copper_rail": "Rails de cuivre érodé",
+    "block.minecarts-overhaul.oxidized_copper_rail": "Rails de cuivre oxydé",
+    "block.minecarts-overhaul.waxed_copper_rail": "Rails de cuivre ciré",
+    "block.minecarts-overhaul.waxed_exposed_copper_rail": "Rails de cuivre exposé ciré",
+    "block.minecarts-overhaul.waxed_weathered_copper_rail": "Rails de cuivre érodé ciré",
+    "block.minecarts-overhaul.waxed_oxidized_copper_rail": "Rails de cuivre oxydé ciré",
+    "item.minecarts-overhaul.patina": "Patina"
+}

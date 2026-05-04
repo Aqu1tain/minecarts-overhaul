@@ -1,0 +1,11 @@
+{
+    "block.minecarts-overhaul.copper_rail": "Koparskjene",
+    "block.minecarts-overhaul.exposed_copper_rail": "Utsett koparskjene",
+    "block.minecarts-overhaul.weathered_copper_rail": "Vêrbitt koparskjene",
+    "block.minecarts-overhaul.oxidized_copper_rail": "Oksidert koparskjene",
+    "block.minecarts-overhaul.waxed_copper_rail": "Voksa koparskjene",
+    "block.minecarts-overhaul.waxed_exposed_copper_rail": "Voksa utsett koparskjene",
+    "block.minecarts-overhaul.waxed_weathered_copper_rail": "Voksa vêrbitt koparskjene",
+    "block.minecarts-overhaul.waxed_oxidized_copper_rail": "Voksa oksidert koparskjene",
+    "item.minecarts-overhaul.patina": "Patina"
+}

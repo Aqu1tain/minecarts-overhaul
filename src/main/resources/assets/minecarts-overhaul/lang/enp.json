@@ -1,0 +1,11 @@
+{
+    "block.minecarts-overhaul.copper_rail": "Are Ironroad",
+    "block.minecarts-overhaul.exposed_copper_rail": "Unwried Are Ironroad",
+    "block.minecarts-overhaul.weathered_copper_rail": "Weathered Are Ironroad",
+    "block.minecarts-overhaul.oxidized_copper_rail": "Sourshafted Are Ironroad",
+    "block.minecarts-overhaul.waxed_copper_rail": "Waxed Are Ironroad",
+    "block.minecarts-overhaul.waxed_exposed_copper_rail": "Waxed Unwried Are Ironroad",
+    "block.minecarts-overhaul.waxed_weathered_copper_rail": "Waxed Weathered Are Ironroad",
+    "block.minecarts-overhaul.waxed_oxidized_copper_rail": "Waxed Sourshafted Are Ironroad",
+    "item.minecarts-overhaul.patina": "Sourshaft"
+}
