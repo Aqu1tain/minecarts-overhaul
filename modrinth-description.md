@@ -1,0 +1,42 @@
+<p align="center">
+  <!-- TODO: replace with the Modrinth-hosted logo URL after upload -->
+  <img src="https://cdn.modrinth.com/data/PROJECT_ID/images/LOGO.png" alt="Minecarts Overhaul" width="600">
+</p>
+
+Vanilla minecarts cap out at 8 m/s, lose all momentum off track, and stop dead the moment they leave a powered rail. This mod rebuilds the entire rail system: faster track, smarter carts, and trains that actually pull cargo behind them.
+
+<center>
+
+### 👉 [Read the full Wiki](https://github.com/Aqu1tain/minecarts-overhaul/wiki) 👈
+
+</center>
+
+
+
+Copper rails replace powered rails as the high-speed option. The base rail caps at 40 m/s, the exposed variant at 20, weathered at 10, and oxidized at 5. They do not push minecarts forward like powered rails. They only raise the speed ceiling, so propulsion stays the cart's responsibility. The four tiers oxidize naturally on the same chain as vanilla copper. Honeycomb wax stops weathering, an axe scrapes a stage off, and Patina takes one stage forward when applied to any oxidizable copper block, including the rails themselves.
+
+<!-- TODO: screenshot of a copper rail line with all four oxidation stages side by side -->
+
+Furnace minecarts are the new locomotive. Drop coal in directly or place a chest or hopper minecart against a furnace minecart and it will pull fuel automatically when it runs low. Activator rails toggle the engine on and off without needing a redstone clock. The furnace minecart drives itself along any rail without powered-rail boosts, and a train of plain minecarts, chest minecarts, hopper minecarts, or dispenser minecarts will follow it through corners, slopes, and ice.
+
+<!-- TODO: screenshot of a 7-cart train running through a curve -->
+
+Trains form by placing carts behind a moving furnace minecart. Up to seven trailers attach in a single tick, and the chain is rendered with chain links between each car. The locomotive's speed propagates down the chain even on unpowered rail, off the rail entirely, and across nether portals. Disconnect by breaking the rail, killing the engine, or pushing the furnace minecart out of the chain.
+
+The dispenser minecart is a new vehicle with a 9-slot inventory. On an activator rail it fires its current item along the cart's heading like a regular dispenser, with an 8-tick cooldown between shots. Useful for arrow lines, fireworks, splash potions, or any redstone contraption that needs a moving emitter.
+
+<!-- TODO: screenshot of a dispenser minecart firing on an activator rail -->
+
+Patina is a new ingredient that drops at a 30 percent chance when an axe scrapes a full copper block. Applied with right-click, it advances any oxidizable copper block one stage. It works on every vanilla copper block as well as the copper rails, so it doubles as a tool for shaping copper builds beyond just the rail system.
+
+Off-rail physics get a pass too. Carts keep horizontal momentum on ice and hold velocity in the air instead of dropping to walking speed the moment they leave the track. Train members ignore collisions with each other and with their locomotive so the chain does not bunch up at the front of the engine.
+
+## Links
+
+- [Wiki](https://github.com/Aqu1tain/minecarts-overhaul/wiki) : system documentation
+- [Source](https://github.com/Aqu1tain/minecarts-overhaul) : GitHub repository
+
+## Credits
+
+- [Akitain](https://modrinth.com/user/akitain) : packaging and 1.21.11 port
+- [green_jab](https://modrinth.com/user/green_jab) : original minecart system in [Fixed Minecraft](https://modrinth.com/mod/fixed-minecraft), used with permission under MIT
