@@ -8,5 +8,6 @@
     "block.minecarts-overhaul.waxed_weathered_copper_rail": "Waxed Weathered Copper Rail",
     "block.minecarts-overhaul.waxed_oxidized_copper_rail": "Waxed Oxidized Copper Rail",
     "item.minecarts-overhaul.dispenser_minecart": "Dispenser Minecart",
-    "entity.minecarts-overhaul.dispenser_minecart": "Dispenser Minecart"
+    "entity.minecarts-overhaul.dispenser_minecart": "Dispenser Minecart",
+    "item.minecarts-overhaul.patina": "Patina"
 }

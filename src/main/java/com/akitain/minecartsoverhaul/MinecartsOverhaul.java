@@ -3,6 +3,7 @@ package com.akitain.minecartsoverhaul;
 import com.akitain.minecartsoverhaul.network.TrainPayload;
 import com.akitain.minecartsoverhaul.registry.block.CopperRailBlock;
 import com.akitain.minecartsoverhaul.registry.block.OxidizableRailBlock;
+import com.akitain.minecartsoverhaul.registry.item.PatinaItem;
 import com.akitain.minecartsoverhaul.registry.other.DispencerMinecartEntity;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
@@ -67,6 +68,8 @@ public class MinecartsOverhaul implements ModInitializer {
     public static final Item DISPENSER_MINECART = registerItem("dispenser_minecart",
             settings -> new MinecartItem(DISPENCER_MINECART_ENTITY_TYPE, settings),
             new Item.Settings().maxCount(1));
+
+    public static final Item PATINA = registerItem("patina", PatinaItem::new, new Item.Settings());
 
     @Override
     public void onInitialize() {
