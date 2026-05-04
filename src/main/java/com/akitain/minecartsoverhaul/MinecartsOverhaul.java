@@ -98,8 +98,9 @@ public class MinecartsOverhaul implements ModInitializer {
     private static Item registerBlockItem(Block block) {
         Identifier blockId = Registries.BLOCK.getId(block);
         RegistryKey<Item> key = RegistryKey.of(RegistryKeys.ITEM, blockId);
-        return Registry.register(Registries.ITEM, key,
-                new BlockItem(block, new Item.Settings().registryKey(key).useBlockPrefixedTranslationKey()));
+        BlockItem item = new BlockItem(block, new Item.Settings().registryKey(key).useBlockPrefixedTranslationKey());
+        item.appendBlocks(Item.BLOCK_ITEMS, item);
+        return Registry.register(Registries.ITEM, key, item);
     }
 
     private static Item registerItem(String name, Function<Item.Settings, Item> factory, Item.Settings settings) {

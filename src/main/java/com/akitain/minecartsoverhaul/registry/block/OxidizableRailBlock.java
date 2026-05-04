@@ -30,6 +30,10 @@ public class OxidizableRailBlock extends CopperRailBlock implements Oxidizable {
 
     @Override
     protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-    this.tickDegradation(state, world, pos, random);}
+        for (int i = 0; i < 4; i++) {
+            this.tickDegradation(state, world, pos, random);
+            if (world.getBlockState(pos) != state) return;
+        }
+    }
 
 }
