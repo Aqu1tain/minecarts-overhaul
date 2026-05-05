@@ -8,14 +8,11 @@ import net.minecraft.world.level.block.WeatheringCopper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-// Targets Yarn's intermediary `method_34740`, the static initializer that builds the unaffected
-// -> exposed -> weathered -> oxidized chain. Adding our copper rails to that map is what lets
-// vanilla `tickDegradation` and `Oxidizable.getIncreasedOxidationBlock` recognise them.
 @Mixin(WeatheringCopper.class)
 public interface OxidizableMixin {
 
     @ModifyExpressionValue(
-            method = "method_34740",
+            method = "lambda$static$0",
             at = @At(
                     value = "INVOKE",
                     target = "Lcom/google/common/collect/ImmutableBiMap;builder()Lcom/google/common/collect/ImmutableBiMap$Builder;",

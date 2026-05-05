@@ -108,7 +108,7 @@ public abstract class ExperimentalMinecartControllerMixin extends MinecartBehavi
         return original;
     }
 
-    @Inject(method = "moveAlongTrack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;isOf(Lnet/minecraft/world/level/block/Block;)Z"))
+    @Inject(method = "moveAlongTrack", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/block/state/BlockState;is(Ljava/lang/Object;)Z"))
     private void recordPoweredRailLitFlag(ServerLevel world, CallbackInfo ci, @Local BlockState blockState) {
         if (!(this.minecart instanceof FixedFurnaceMinecartEntity locomotive)) return;
         if (!blockState.is(Blocks.POWERED_RAIL)) return;
@@ -126,7 +126,7 @@ public abstract class ExperimentalMinecartControllerMixin extends MinecartBehavi
         cir.cancel();
     }
 
-    @Redirect(method = "pushEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;hasPassengers()Z"))
+    @Redirect(method = "pushEntities", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/vehicle/minecart/AbstractMinecart;isVehicle()Z"))
     private boolean treatRiddenAsEmptyForPush(AbstractMinecart instance) {
         // Vanilla halves push force when a cart has passengers; returning false keeps full force
         // so trains don't compress at the locomotive when a player rides one of the trailers.
