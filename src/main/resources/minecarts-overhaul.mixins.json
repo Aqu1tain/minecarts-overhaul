@@ -15,6 +15,9 @@
         "minecart.PlayerEntityMixin",
         "minecart.ServerPlayerEntityMixin"
     ],
+    "client": [
+        "client.minecart.EntityRendererMixin"
+    ],
     "injectors": {
         "defaultRequire": 1
     }
