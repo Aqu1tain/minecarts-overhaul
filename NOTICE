@@ -1,11 +1,12 @@
 Minecarts Overhaul
 Copyright (c) 2026 Aqu1tain
 
-The minecart system in this mod is inspired by the design of
-Fixed Minecraft by green_jab, used with permission.
-Fixed Minecraft is distributed under the MIT License, reproduced
-below verbatim. The copyright holder named in that license,
-"Joshua Baikie", is the legal name of green_jab.
+Portions of the minecart system, copper rail resources, and related
+client behavior in this mod are derived from Fixed Minecraft by
+green_jab, used with permission and under the MIT License.
+The Fixed Minecraft MIT License is reproduced below verbatim.
+The copyright holder named in that license, "Joshua Baikie", is
+the legal name of green_jab.
 
     MIT License
 
