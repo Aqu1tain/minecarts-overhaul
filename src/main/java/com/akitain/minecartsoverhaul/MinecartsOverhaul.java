@@ -3,7 +3,6 @@ package com.akitain.minecartsoverhaul;
 import com.akitain.minecartsoverhaul.network.TrainPayload;
 import com.akitain.minecartsoverhaul.registry.block.CopperRailBlock;
 import com.akitain.minecartsoverhaul.registry.block.OxidizableRailBlock;
-import com.akitain.minecartsoverhaul.registry.item.PatinaItem;
 import com.akitain.minecartsoverhaul.registry.other.DispencerMinecartEntity;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
@@ -66,8 +65,6 @@ public class MinecartsOverhaul implements ModInitializer {
             settings -> new MinecartItem(DISPENCER_MINECART_ENTITY_TYPE, settings),
             new Item.Properties().stacksTo(1));
 
-    public static final Item PATINA = registerItem("patina", PatinaItem::new, new Item.Properties());
-
     private static final Item[] RAIL_ITEMS_IN_ORDER = {
             COPPER_RAIL_ITEM, EXPOSED_COPPER_RAIL_ITEM, WEATHERED_COPPER_RAIL_ITEM, OXIDIZED_COPPER_RAIL_ITEM,
             WAXED_COPPER_RAIL_ITEM, WAXED_EXPOSED_COPPER_RAIL_ITEM, WAXED_WEATHERED_COPPER_RAIL_ITEM, WAXED_OXIDIZED_COPPER_RAIL_ITEM,
@@ -77,8 +74,6 @@ public class MinecartsOverhaul implements ModInitializer {
     public void onInitialize() {
         TrainPayload.register();
         CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.REDSTONE_BLOCKS).register(MinecartsOverhaul::addRedstoneTabEntries);
-        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.INGREDIENTS).register(entries ->
-                entries.insertAfter(Items.COPPER_INGOT, PATINA));
         LOGGER.info("Minecarts Overhaul loaded");
     }
 

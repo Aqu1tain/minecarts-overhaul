@@ -4,7 +4,6 @@
     "compatibilityLevel": "JAVA_17",
     "mixins": [
         "minecart.AbstractMinecartEntityMixin",
-        "minecart.AxeItemMixin",
         "minecart.EntityTypeMixin",
         "minecart.ExperimentalMinecartControllerMixin",
         "minecart.FurnaceMinecartEntityMixin",
