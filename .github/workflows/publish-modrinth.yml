@@ -16,6 +16,10 @@ jobs:
           distribution: temurin
           java-version: 25
 
+      # gradle.properties pins org.gradle.java.home to a local macOS path; drop it so the CI JDK is used.
+      - name: Use the CI JDK
+        run: sed -i '/org.gradle.java.home/d' gradle.properties
+
       - name: Build
         run: |
           chmod +x gradlew

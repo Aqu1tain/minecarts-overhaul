@@ -25,5 +25,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
 
+      # gradle.properties pins org.gradle.java.home to a local macOS path; drop it so the CI JDK is used.
+      - name: Use the CI JDK
+        run: sed -i '/org.gradle.java.home/d' gradle.properties
+
       - name: Build
         run: ./gradlew build
